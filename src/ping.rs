@@ -1,11 +1,9 @@
 // ping command
-use crate::{get_guild_name, CustomContext, Error};
+use crate::{CustomContext, Error, get_guild_name};
 use poise::serenity_prelude::GuildId;
 use poise::{
-    serenity_prelude::{
-        Colour, CreateEmbed, Timestamp,
-    },
     CreateReply,
+    serenity_prelude::{Colour, CreateEmbed, Timestamp},
 };
 
 #[poise::command(
@@ -16,7 +14,7 @@ use poise::{
 pub(crate) async fn ping(ctx: CustomContext<'_>) -> Result<(), Error> {
     let ping = ctx.ping().await;
 
-    let prefix = crate::set_prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1))).await;
+    let prefix = crate::prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1))).await;
 
     let desc = format!(
         "
@@ -31,13 +29,15 @@ pub(crate) async fn ping(ctx: CustomContext<'_>) -> Result<(), Error> {
         ctx.serenity_context().shard_id.0,
         prefix
     );
-    let res = CreateReply::default().embed(
-        CreateEmbed::new()
-            .description(desc)
-            .title("Bot Status")
-            .timestamp(Timestamp::now())
-            .color(Colour::from_rgb(88, 101, 242)),
-    ).reply(true);
+    let res = CreateReply::default()
+        .embed(
+            CreateEmbed::new()
+                .description(desc)
+                .title("Bot Status")
+                .timestamp(Timestamp::now())
+                .color(Colour::from_rgb(88, 101, 242)),
+        )
+        .reply(true);
     ctx.send(res).await?;
     Ok(())
 }
