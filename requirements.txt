@@ -1,5 +1,0 @@
-discord.py==2.7.1
-aiohttp==3.14.1
-python-dotenv==1.2.2
-ollama==0.6.2
-pymongo==4.17.0 # we don't need to use motor anymore as pymongo has async support now
