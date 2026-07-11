@@ -1,5 +1,5 @@
 use super::super::build_message_reply;
-use crate::{database::get_collection, setup_guild, CustomContext, Error};
+use crate::{CustomContext, Error, database::get_collection, setup_guild};
 use mongodb::bson::doc;
 use poise::serenity_prelude::{Colour, GuildId};
 
@@ -7,7 +7,8 @@ use poise::serenity_prelude::{Colour, GuildId};
     slash_command,
     prefix_command,
     description_localized("en-US", "Sets the prefix for the bot"),
-    guild_only
+    guild_only,
+    broadcast_typing
 )]
 pub(crate) async fn set_prefix(
     ctx: CustomContext<'_>,

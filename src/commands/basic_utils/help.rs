@@ -1,11 +1,11 @@
 use crate::{CustomContext, Error};
 
-
 #[poise::command(
     prefix_command,
     track_edits,
     slash_command,
-    description_localized("en-US", "Help command that lists all available commands.")
+    description_localized("en-US", "Help command that lists all available commands."),
+    broadcast_typing
 )]
 pub async fn help(
     ctx: CustomContext<'_>,

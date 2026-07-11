@@ -1,8 +1,10 @@
 // info command
-use crate::{get_guild_name, CustomContext, Error};
-use poise::serenity_prelude::Colour;
-use poise::serenity_prelude::{CreateAllowedMentions, CreateEmbed, GuildId, Timestamp, CreateActionRow, CreateButton};
+use crate::{CustomContext, Error, get_guild_name};
 use poise::CreateReply;
+use poise::serenity_prelude::Colour;
+use poise::serenity_prelude::{
+    CreateActionRow, CreateAllowedMentions, CreateButton, CreateEmbed, GuildId, Timestamp,
+};
 use reqwest;
 use std::collections::HashMap;
 
@@ -34,9 +36,13 @@ async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
     slash_command,
     prefix_command,
     description_localized("en-US", "Shows some information about the bot."),
+    broadcast_typing
 )]
 pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
     //! Shows some information about the bot.
+    //!
+    //! Also shows contributors, fetched from
+    //! https://api.github.com/repos/Shreshtgaming606/OmniCore-Discord-Bot/contributors
     let prefix =
         crate::commands::basic_utils::prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1)))
             .await;
@@ -61,29 +67,29 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
         .collect::<Vec<_>>()
         .join("\n");
 
-    let contributors_desc = format!("\n\n{}\n-# These people have contributed to the development of OmniCore's Discord Bot", list);
+    let contributors_desc = format!(
+        "\n\n{}\n-# These people have contributed to the development of OmniCore's Discord Bot",
+        list
+    );
 
     let res = CreateReply::default()
         .embed(
             CreateEmbed::new()
                 .description(desc)
                 .title("Bot Information")
-                .color(Colour::from_rgb(88, 101, 242))
+                .color(Colour::from_rgb(88, 101, 242)),
         )
         .embed(
             CreateEmbed::new()
                 .title("Contributors")
                 .description(contributors_desc)
                 .timestamp(Timestamp::now())
-                .color(Colour::from_rgb(0, 255, 0))
+                .color(Colour::from_rgb(0, 255, 0)),
         )
-        .components(
-            vec![
-                CreateActionRow::Buttons(vec![
-                    CreateButton::new_link("https://unloaded.steampirate.life").label("Visit the OmniCore website")
-                ])
-            ]
-        )
+        .components(vec![CreateActionRow::Buttons(vec![
+            CreateButton::new_link("https://unloaded.steampirate.life")
+                .label("Visit the OmniCore website"),
+        ])])
         .reply(true)
         .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles());
 

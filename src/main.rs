@@ -73,7 +73,8 @@ async fn main() {
         commands::basic_utils::ping::ping(),
         commands::basic_utils::prefix::set_prefix(),
         commands::basic_utils::info::info(),
-        commands::basic_utils::help::help()
+        commands::basic_utils::help::help(),
+        commands::moderation::kick::kick(),
     ];
 
     let _admin_commands = vec!["set_prefix"];
@@ -128,8 +129,8 @@ async fn main() {
                     if invalid_args {
                         let _ = err.ctx().unwrap().send(CreateReply::default().embed(
                             CreateEmbed::new()
-                                .description("You are missing some arguments, please check the command usage by using the `help` command followed by the command name. e.g. `help info`")
-                                .title(":x: Missing Arguments")
+                                .description(format!("Failed to parse arguments, please check the command usage by using the `help` command followed by the command name. e.g. `help info`\n{}", err.to_string().replace("`", "'")))
+                                .title(":x: Failed to Parse Arguments")
                                 .timestamp(Timestamp::now())
                                 .color(Colour::RED),
                         ).reply(true).ephemeral(true)).await;
@@ -157,7 +158,7 @@ async fn main() {
                     },
             prefix_options: poise::PrefixFrameworkOptions {
                 prefix: None,
-                mention_as_prefix: true,
+                mention_as_prefix: false,
                 dynamic_prefix: Some(|ctx| { // Dynamic prefix, so it can be changed per server
                     Box::pin(async move {
                         if ctx.guild_id.is_none() { // is_none() is true if the command was executed in a DM
