@@ -17,6 +17,7 @@ pub(crate) async fn kick(
     #[description = "Member to kick"] member: Member,
     #[description = "Reason for the kick"] reason: Option<String>,
 ) -> Result<(), Error> {
+    //! Kick a member from the server.
     let reason_pre = reason.unwrap_or_else(|| "No reason provided".to_string());
 
     let reason = format!("{} | Kicked by {}", reason_pre, ctx.author().tag());
