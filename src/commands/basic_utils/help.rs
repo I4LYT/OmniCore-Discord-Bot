@@ -17,7 +17,8 @@ pub async fn help(
 
     let config = poise::builtins::HelpConfiguration {
         extra_text_at_bottom: &format!(
-            "Type {}help command for more info on a command. Mention (@) the bot to talk to the AI.",
+            "Type {}help command for more info on a command. Mention (@) the bot to talk to the AI.\
+            \nIf you are trying to enter in text NOT using slash-commands, put `\"` around the text.",
             prefix
         ),
         include_description: true,
