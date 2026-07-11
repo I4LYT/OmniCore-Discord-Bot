@@ -9,6 +9,7 @@ use poise::serenity_prelude::Colour;
     description_localized("en-US", "Checks the ping, along with some other useful information.")
 )]
 pub(crate) async fn ping(ctx: CustomContext<'_>) -> Result<(), Error> {
+    //! Checks the ping, along with some other useful information.
     let ping = ctx.ping().await;
 
     let desc = format!(

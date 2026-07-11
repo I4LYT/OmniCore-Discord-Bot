@@ -73,6 +73,7 @@ async fn main() {
         commands::basic_utils::ping::ping(),
         commands::basic_utils::prefix::set_prefix(),
         commands::basic_utils::info::info(),
+        commands::basic_utils::help::help()
     ];
 
     let _admin_commands = vec!["set_prefix"];
@@ -115,10 +116,24 @@ async fn main() {
                 Box::pin(async move {
                     #[allow(unused)]
                     let mut skip = false;
+                    #[allow(unused)]
+                    let mut invalid_args = false;
 
                     match err {
                         FrameworkError::CommandCheckFailed {error: _, ctx: _, ..} => {skip = true}, // to prevent double logging
+                        FrameworkError::ArgumentParse {error: _, ctx: _, ..} => {invalid_args = true},
                         _ => {}
+                    }
+
+                    if invalid_args {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description("You are missing some arguments, please check the command usage by using the `help` command followed by the command name. e.g. `help info`")
+                                .title(":x: Missing Arguments")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::RED),
+                        ).reply(true).ephemeral(true)).await;
+                        return;
                     }
 
                     if err.ctx().is_none() && !skip {

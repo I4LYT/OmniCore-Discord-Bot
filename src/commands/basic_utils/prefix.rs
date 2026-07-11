@@ -13,6 +13,7 @@ pub(crate) async fn set_prefix(
     ctx: CustomContext<'_>,
     #[description = "What you want to set the prefix to"] new_prefix: String,
 ) -> Result<(), Error> {
+    //! Sets the prefix for the bot
     let per_guild_settings_col =
         get_collection("per_guild_settings").expect("Failed to load per_guild_settings collection");
 

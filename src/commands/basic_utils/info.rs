@@ -1,7 +1,7 @@
 // info command
 use crate::{get_guild_name, CustomContext, Error};
 use poise::serenity_prelude::Colour;
-use poise::serenity_prelude::{CreateAllowedMentions, CreateEmbed, GuildId, Timestamp};
+use poise::serenity_prelude::{CreateAllowedMentions, CreateEmbed, GuildId, Timestamp, CreateActionRow, CreateButton};
 use poise::CreateReply;
 use reqwest;
 use std::collections::HashMap;
@@ -11,7 +11,7 @@ async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
     let client = reqwest::Client::new();
     let response = client
         .get(url)
-        .header("User-Agent", "OmniCore-Discord-Bot")
+        .header("User-Agent", "firefox")
         .send()
         .await?;
 
@@ -33,9 +33,10 @@ async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
 #[poise::command(
     slash_command,
     prefix_command,
-    description_localized("en-US", "Shows some information about the bot.")
+    description_localized("en-US", "Shows some information about the bot."),
 )]
 pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
+    //! Shows some information about the bot.
     let prefix =
         crate::commands::basic_utils::prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1)))
             .await;
@@ -75,6 +76,13 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
                 .description(contributors_desc)
                 .timestamp(Timestamp::now())
                 .color(Colour::from_rgb(0, 255, 0))
+        )
+        .components(
+            vec![
+                CreateActionRow::Buttons(vec![
+                    CreateButton::new_link("https://unloaded.steampirate.life").label("Visit the OmniCore website")
+                ])
+            ]
         )
         .reply(true)
         .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles());
