@@ -72,6 +72,7 @@ async fn main() {
     let cmds: Vec<Command<Data, Box<dyn std::error::Error + Send + Sync>>> = vec![
         commands::basic_utils::ping::ping(),
         commands::basic_utils::prefix::set_prefix(),
+        commands::basic_utils::info::info(),
     ];
 
     let _admin_commands = vec!["set_prefix"];
