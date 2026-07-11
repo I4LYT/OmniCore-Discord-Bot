@@ -36,7 +36,8 @@ async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
     slash_command,
     prefix_command,
     description_localized("en-US", "Shows some information about the bot."),
-    broadcast_typing
+    broadcast_typing,
+    category = "Utility"
 )]
 pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
     //! Shows some information about the bot.

@@ -10,12 +10,13 @@ use poise::serenity_prelude::{
     required_permissions = "KICK_MEMBERS",
     default_member_permissions = "KICK_MEMBERS",
     guild_only,
-    broadcast_typing
+    broadcast_typing,
+    category = "Moderation"
 )]
 pub(crate) async fn kick(
     ctx: CustomContext<'_>,
     #[description = "Member to kick"] member: Member,
-    #[description = "Reason for the kick"] reason: Option<String>,
+    #[description = "Reason for the kick"] #[rest] reason: Option<String>, // #[rest] uses the rest of the message as the reason
 ) -> Result<(), Error> {
     //! Kick a member from the server.
     let reason_pre = reason.unwrap_or_else(|| "No reason provided".to_string());

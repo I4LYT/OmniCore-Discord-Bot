@@ -8,7 +8,8 @@ use poise::serenity_prelude::{Colour, GuildId};
     prefix_command,
     description_localized("en-US", "Sets the prefix for the bot"),
     guild_only,
-    broadcast_typing
+    broadcast_typing,
+    category = "Utility"
 )]
 pub(crate) async fn set_prefix(
     ctx: CustomContext<'_>,

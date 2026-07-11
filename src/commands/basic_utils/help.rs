@@ -5,7 +5,8 @@ use crate::{CustomContext, Error, commands::basic_utils::prefix::get_prefix};
     track_edits,
     slash_command,
     description_localized("en-US", "Help command that lists all available commands."),
-    broadcast_typing
+    broadcast_typing,
+    category = "Utility"
 )]
 pub async fn help(
     ctx: CustomContext<'_>,
@@ -18,7 +19,7 @@ pub async fn help(
     let config = poise::builtins::HelpConfiguration {
         extra_text_at_bottom: &format!(
             "Type {}help command for more info on a command. Mention (@) the bot to talk to the AI.\
-            \nIf you are trying to enter in text NOT using slash-commands, put `\"` around the text.",
+            \nIf you are trying to enter in text NOT using slash-commands, put `\"` around the text. This doesn't apply to commands that have only one text field",
             prefix
         ),
         include_description: true,

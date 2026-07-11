@@ -7,7 +7,8 @@ use poise::serenity_prelude::Colour;
     slash_command,
     prefix_command,
     description_localized("en-US", "Checks the ping, along with some other useful information."),
-    broadcast_typing
+    broadcast_typing,
+    category = "Utility"
 )]
 pub(crate) async fn ping(ctx: CustomContext<'_>) -> Result<(), Error> {
     //! Checks the ping, along with some other useful information.
