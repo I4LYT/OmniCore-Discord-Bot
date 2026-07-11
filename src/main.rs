@@ -1,8 +1,7 @@
+mod commands;
 mod config;
 mod database;
 mod logging;
-mod prefix;
-mod ping;
 
 use mongodb::bson::doc;
 use poise::{
@@ -70,8 +69,10 @@ async fn main() {
         .await
         .expect("Failed to ensure indexes");
 
-    let cmds: Vec<Command<Data, Box<dyn std::error::Error + Send + Sync>>> =
-        vec![ping::ping(), prefix::set_prefix()];
+    let cmds: Vec<Command<Data, Box<dyn std::error::Error + Send + Sync>>> = vec![
+        commands::basic_utils::ping::ping(),
+        commands::basic_utils::prefix::set_prefix(),
+    ];
 
     let _admin_commands = vec!["set_prefix"];
 
@@ -129,7 +130,7 @@ async fn main() {
                                 .title(":x: Internal (sometimes user) Error")
                                 .timestamp(Timestamp::now())
                                 .color(Colour::RED),
-                        ).reply(true)).await;
+                        ).reply(true).ephemeral(true)).await;
                     }
                 })
             },
@@ -147,7 +148,7 @@ async fn main() {
                             Ok(Some("!".to_string()))
                         } else {
                             let guild = ctx.guild_id.unwrap();
-                            let prefix = crate::prefix::get_prefix(guild).await;
+                            let prefix = commands::basic_utils::prefix::get_prefix(guild).await;
                             Ok(Some(prefix.to_owned()))
                         }
                     })

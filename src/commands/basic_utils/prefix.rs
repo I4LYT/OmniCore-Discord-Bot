@@ -1,9 +1,7 @@
-use crate::{CustomContext, Error, database::get_collection, setup_guild};
+use super::super::build_message_reply;
+use crate::{database::get_collection, setup_guild, CustomContext, Error};
 use mongodb::bson::doc;
-use poise::{
-    CreateReply,
-    serenity_prelude::{Colour, CreateEmbed, GuildId, Timestamp},
-};
+use poise::serenity_prelude::{Colour, GuildId};
 
 #[poise::command(
     slash_command,
@@ -20,8 +18,7 @@ pub(crate) async fn set_prefix(
 
     if per_guild_settings_col
         .find_one(doc! {"guild_id": ctx.guild_id().unwrap().to_string()})
-        .await
-        .unwrap()
+        .await?
         .is_none()
     {
         setup_guild(ctx.guild_id().unwrap()).await;
@@ -34,17 +31,12 @@ pub(crate) async fn set_prefix(
         )
         .await;
 
-    ctx.send(
-        CreateReply::default()
-            .embed(
-                CreateEmbed::new()
-                    .description(format!("Successfully updated prefix to `{}`", new_prefix))
-                    .title("Updated Prefix")
-                    .timestamp(Timestamp::now())
-                    .color(Colour::from_rgb(88, 101, 242)),
-            )
-            .reply(true),
-    )
+    ctx.send(build_message_reply(
+        "Updated Prefix",
+        &format!("Successfully updated prefix to `{}`", new_prefix),
+        Colour::from_rgb(88, 101, 242),
+        false,
+    ))
     .await?;
 
     return Ok(());
