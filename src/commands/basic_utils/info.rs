@@ -48,21 +48,21 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
     let prefix =
         crate::commands::basic_utils::prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1)))
             .await;
-    
-    let time_difference = START_TIME.get().unwrap().signed_duration_since(chrono::Utc::now());
-    
+
+    let start_time = START_TIME.get().unwrap();
+
     let desc = format!(
         "
 - Server: {}
 - Shard: `{}`
 - Bot Prefix for this server: `{}`
 - GitHub: https://github.com/Shreshtgaming606/OmniCore-Discord-Bot/
-- Shard Uptime: {} seconds
+- Shard Started <t:{}:R>
         ",
         get_guild_name(&ctx).await,
         ctx.serenity_context().shard_id.0,
         prefix,
-        time_difference.num_seconds().abs()
+        start_time.timestamp()
     );
 
     let contributors = get_contributors().await?;
