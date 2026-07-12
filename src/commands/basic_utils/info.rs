@@ -7,6 +7,7 @@ use poise::serenity_prelude::{
 };
 use reqwest;
 use std::collections::HashMap;
+use crate::START_TIME;
 
 async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
     let url = "https://api.github.com/repos/Shreshtgaming606/OmniCore-Discord-Bot/contributors";
@@ -47,17 +48,21 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
     let prefix =
         crate::commands::basic_utils::prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1)))
             .await;
-
+    
+    let time_difference = START_TIME.get().unwrap().signed_duration_since(chrono::Utc::now());
+    
     let desc = format!(
         "
 - Server: {}
 - Shard: `{}`
 - Bot Prefix for this server: `{}`
 - GitHub: https://github.com/Shreshtgaming606/OmniCore-Discord-Bot/
+- Shard Uptime: {} seconds
         ",
         get_guild_name(&ctx).await,
         ctx.serenity_context().shard_id.0,
-        prefix
+        prefix,
+        time_difference.num_seconds().abs()
     );
 
     let contributors = get_contributors().await?;

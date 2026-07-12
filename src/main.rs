@@ -16,11 +16,14 @@ use serenity::prelude::*;
 use std::collections::HashSet;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
+use once_cell::sync::OnceCell;
 
 struct Data {}
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type CustomContext<'a> = poise::Context<'a, Data, Error>;
 struct Handler;
+
+static START_TIME: OnceCell<chrono::DateTime<chrono::Utc>> = OnceCell::new();
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -59,6 +62,8 @@ async fn get_guild_owner_id(ctx: &CustomContext<'_>) -> serenity::UserId {
 
 #[tokio::main]
 async fn main() {
+    START_TIME.set(chrono::Utc::now()).expect("Failed to set START_TIME");
+    
     logging::init_logging();
     log::info!("Starting OmniCore Discord Bot...");
     config::init_config();
