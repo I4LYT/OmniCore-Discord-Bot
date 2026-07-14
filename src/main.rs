@@ -80,6 +80,7 @@ async fn main() {
         commands::basic_utils::info::info(),
         commands::basic_utils::help::help(),
         commands::moderation::kick::kick(),
+        commands::moderation::ban::ban(),
     ];
 
     let _admin_commands = vec!["set_prefix"];
