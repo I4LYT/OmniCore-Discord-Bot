@@ -1,4 +1,5 @@
 // info command
+use crate::START_TIME;
 use crate::{CustomContext, Error, get_guild_name};
 use poise::CreateReply;
 use poise::serenity_prelude::Colour;
@@ -7,7 +8,6 @@ use poise::serenity_prelude::{
 };
 use reqwest;
 use std::collections::HashMap;
-use crate::START_TIME;
 
 async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
     let url = "https://api.github.com/repos/Shreshtgaming606/OmniCore-Discord-Bot/contributors";

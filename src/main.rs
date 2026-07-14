@@ -4,6 +4,7 @@ mod database;
 mod logging;
 
 use mongodb::bson::doc;
+use once_cell::sync::OnceCell;
 use poise::{
     Command, CreateReply, FrameworkError,
     serenity_prelude::{self as serenity, Colour, CreateEmbed, GuildId, Timestamp},
@@ -16,7 +17,6 @@ use serenity::prelude::*;
 use std::collections::HashSet;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
-use once_cell::sync::OnceCell;
 
 struct Data {}
 type Error = Box<dyn std::error::Error + Send + Sync>;
@@ -62,8 +62,10 @@ async fn get_guild_owner_id(ctx: &CustomContext<'_>) -> serenity::UserId {
 
 #[tokio::main]
 async fn main() {
-    START_TIME.set(chrono::Utc::now()).expect("Failed to set START_TIME");
-    
+    START_TIME
+        .set(chrono::Utc::now())
+        .expect("Failed to set START_TIME");
+
     logging::init_logging();
     log::info!("Starting OmniCore Discord Bot...");
     config::init_config();

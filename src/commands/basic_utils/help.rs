@@ -14,7 +14,11 @@ pub async fn help(
 ) -> Result<(), Error> {
     //! Help command that lists all available commands.
 
-    let prefix = get_prefix(ctx.guild_id().unwrap_or(poise::serenity_prelude::GuildId::new(1))).await;
+    let prefix = get_prefix(
+        ctx.guild_id()
+            .unwrap_or(poise::serenity_prelude::GuildId::new(1)),
+    )
+    .await;
 
     let config = poise::builtins::HelpConfiguration {
         extra_text_at_bottom: &format!(

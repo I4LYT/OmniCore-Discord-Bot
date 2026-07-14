@@ -1,7 +1,9 @@
 use crate::{CustomContext, Error};
 use poise::CreateReply;
+use poise::serenity_prelude::http::HttpError;
 use poise::serenity_prelude::{
-    Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, Member, Mentionable, Timestamp,
+    Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, DiscordJsonError,
+    Error as SError, ErrorResponse, Member, Mentionable, StatusCode, Timestamp,
 };
 
 #[poise::command(
@@ -16,15 +18,42 @@ use poise::serenity_prelude::{
 pub(crate) async fn kick(
     ctx: CustomContext<'_>,
     #[description = "Member to kick"] member: Member,
-    #[description = "Reason for the kick"] #[rest] reason: Option<String>, // #[rest] uses the rest of the message as the reason
+    #[description = "Reason for the kick"]
+    #[rest]
+    reason: Option<String>, // #[rest] uses the rest of the message as the reason
 ) -> Result<(), Error> {
     //! Kick a member from the server.
     let reason_pre = reason.unwrap_or_else(|| "No reason provided".to_string());
 
     let reason = format!("{} | Kicked by {}", reason_pre, ctx.author().tag());
 
-    member.kick_with_reason(&ctx.http(), &reason).await?;
+    match member.kick_with_reason(&ctx.http(), &reason).await {
+        Ok(_) => {}
+        Err(SError::Http(HttpError::UnsuccessfulRequest(ErrorResponse {
+            status_code: StatusCode::FORBIDDEN,
+            error: DiscordJsonError { code: 50013, .. },
+            ..
+        }))) => {
+            let res = CreateReply::default()
+                .embed(
+                    CreateEmbed::new()
+                        .description("I do not have the required permissions to kick this user.\n\nThis could mean that the bot's role is lower than the role of the user you are trying to kick.")
+                        .title(":x: Missing Permissions")
+                        .timestamp(Timestamp::now())
+                        .color(Colour::from_rgb(255, 0, 0)),
+                )
+                .reply(true)
+                .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles());
 
+            ctx.send(res).await?;
+            return Ok(());
+        }
+        Err(e) => {
+            log::error!("Error in kicking user: {}", e);
+            log::error!("Error Details: {:#?}", e);
+            return Err(e.into());
+        }
+    }
     let res = CreateReply::default()
         .embed(
             CreateEmbed::new()
