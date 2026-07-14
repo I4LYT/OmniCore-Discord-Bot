@@ -10,9 +10,11 @@ use poise::serenity_prelude::{
     prefix_command,
     required_permissions = "BAN_MEMBERS",
     default_member_permissions = "BAN_MEMBERS",
+    required_bot_permissions = "BAN_MEMBERS",
     guild_only,
     broadcast_typing,
-    category = "Moderation"
+    category = "Moderation",
+    description_localized("en-US", "Bans a member from the server..")
 )]
 pub(crate) async fn ban(
     ctx: CustomContext<'_>,

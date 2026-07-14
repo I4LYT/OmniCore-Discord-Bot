@@ -11,9 +11,11 @@ use poise::serenity_prelude::{
     prefix_command,
     required_permissions = "KICK_MEMBERS",
     default_member_permissions = "KICK_MEMBERS",
+    required_bot_permissions = "KICK_MEMBERS",
     guild_only,
     broadcast_typing,
-    category = "Moderation"
+    category = "Moderation",
+    description_localized("en-US", "Kicks a member from the server.")
 )]
 pub(crate) async fn kick(
     ctx: CustomContext<'_>,
