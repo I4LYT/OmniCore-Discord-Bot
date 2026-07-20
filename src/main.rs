@@ -85,9 +85,8 @@ async fn main() {
         commands::moderation::ban::ban(),
         commands::moderation::lock::lock(),
         commands::moderation::unlock::unlock(),
+        commands::moderation::purge::purge(),
     ];
-
-    let _admin_commands = vec!["set_prefix"];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
     let intents = GatewayIntents::GUILD_MESSAGES
@@ -106,18 +105,6 @@ async fn main() {
             command_check: Some(|ctx| {
                 Box::pin(async move {
                     log::info!("Checking command {} by {} in {}", ctx.command().qualified_name, get_user_name(&ctx).await, ctx.guild_id().unwrap_or(GuildId::new(1)));
-
-                    if ctx.command().qualified_name == "set_prefix" && !(ctx.author().id == get_guild_owner_id(&ctx).await) { // Check if the user is the owner of the server
-                        log::warn!("User {} has insufficient permissions to execute {}", get_user_name(&ctx).await, ctx.command().qualified_name);
-                        ctx.send(CreateReply::default().embed(
-                            CreateEmbed::new()
-                                .description("This command can only be executed by the owner of the server.")
-                                .title(":x: Owner-only command")
-                                .timestamp(Timestamp::now())
-                                .color(Colour::RED),
-                        ).reply(true).ephemeral(true)).await?;
-                        return Ok(false);
-                    }
                     Ok(true)
                 })
             }),

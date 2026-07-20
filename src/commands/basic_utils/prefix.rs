@@ -8,6 +8,8 @@ use poise::serenity_prelude::{Colour, GuildId};
     prefix_command,
     description_localized("en-US", "Sets the prefix for the bot"),
     guild_only,
+    required_permissions = "MANAGE_GUILD",
+    default_member_permissions = "MANAGE_GUILD",
     broadcast_typing,
     category = "Utility"
 )]
