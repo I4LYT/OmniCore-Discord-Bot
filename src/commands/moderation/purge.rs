@@ -37,7 +37,9 @@ pub(crate) async fn purge(
     //! Messages older than 14 days are deleted individually, since Discord's
     //! bulk delete endpoint rejects/discards anything older than that.
     //! Also note that when you run this command (if using prefix), it will
-    //! also count that message in it.
+    //! also count that message in it. This command takes a while, especially on older messages,
+    //! as Discord's API limits individual delete to 5 deletion requests every second. This means that
+    //! deleting 100 messages that are older than 14 days will take around 5 minutes.
 
     if amount == 0 {
         let res = build_message_reply(
