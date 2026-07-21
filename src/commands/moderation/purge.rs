@@ -6,8 +6,7 @@ use futures::pin_mut;
 use mongodb::bson::doc;
 use poise::CreateReply;
 use poise::serenity_prelude::{
-    Channel, Colour, CreateAllowedMentions, CreateEmbed, Member, Mentionable, MessageId, Role,
-    StatusCode, Timestamp,
+    Channel, Colour, CreateAllowedMentions, CreateEmbed, Member, Mentionable, MessageId, Timestamp,
 };
 
 #[poise::command(

@@ -53,6 +53,7 @@ async fn get_guild_name(ctx: &CustomContext<'_>) -> String {
     ctx.guild().unwrap().name.clone()
 }
 
+#[allow(dead_code)]
 async fn get_guild_owner_id(ctx: &CustomContext<'_>) -> serenity::UserId {
     if ctx.guild_id().is_none() {
         return serenity::UserId::new(1); // Invalid, so nothing can point to it.
