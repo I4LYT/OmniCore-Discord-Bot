@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use super::super::build_message_reply;
 use crate::{CustomContext, Error};
 use chrono::Utc;
@@ -8,6 +9,7 @@ use poise::CreateReply;
 use poise::serenity_prelude::{
     Channel, Colour, CreateAllowedMentions, CreateEmbed, Member, Mentionable, MessageId, Timestamp,
 };
+use tokio::time::timeout;
 
 #[poise::command(
     slash_command,
@@ -16,7 +18,6 @@ use poise::serenity_prelude::{
     default_member_permissions = "MANAGE_MESSAGES",
     required_bot_permissions = "MANAGE_MESSAGES",
     guild_only,
-    broadcast_typing,
     category = "Moderation",
     description_localized(
         "en-US",
@@ -35,10 +36,12 @@ pub(crate) async fn purge(
     //! For messages newer than 14 days, we will still use the bulk delete API.
     //! Messages older than 14 days are deleted individually, since Discord's
     //! bulk delete endpoint rejects/discards anything older than that.
-    //! Also note that when you run this command (if using prefix), it will
-    //! also count that message in it. This command takes a while, especially on older messages,
+    //! This command takes a while, especially on older messages,
     //! as Discord's API limits individual delete to 5 deletion requests every second. This means that
     //! deleting 100 messages that are older than 14 days will take around 5 minutes.
+
+    // broadcast typing indicator
+    let typing = poise::serenity_prelude::Typing::start(ctx.serenity_context().http.clone(), ctx.channel_id());
 
     if amount == 0 {
         let res = build_message_reply(
@@ -50,6 +53,8 @@ pub(crate) async fn purge(
         ctx.send(res).await?;
         return Ok(());
     }
+
+    let amount = amount + 1;
 
     let http = ctx.http();
     let messages = channel.id().messages_iter(&http);
@@ -157,7 +162,13 @@ pub(crate) async fn purge(
             .reply(false)
             .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles());
 
-        ctx.send(res).await?;
+        let res = ctx.send(res).await?;
+        typing.stop();
+        let message = res.message().await?;
+
+        tokio::time::sleep(std::time::Duration::from_secs(10)).await;
+        let _ = message.delete(&http).await;
+
     }
 
     Ok(())
