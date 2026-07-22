@@ -14,7 +14,7 @@ use poise::serenity_prelude::{
     guild_only,
     broadcast_typing,
     category = "Moderation",
-    description_localized("en-US", "Bans a member from the server..")
+    description_localized("en-US", "Bans a member from the server.")
 )]
 pub(crate) async fn ban(
     ctx: CustomContext<'_>,

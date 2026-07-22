@@ -1,4 +1,3 @@
-use std::sync::Arc;
 use super::super::build_message_reply;
 use crate::{CustomContext, Error};
 use chrono::Utc;
@@ -9,7 +8,6 @@ use poise::CreateReply;
 use poise::serenity_prelude::{
     Channel, Colour, CreateAllowedMentions, CreateEmbed, Member, Mentionable, MessageId, Timestamp,
 };
-use tokio::time::timeout;
 
 #[poise::command(
     slash_command,
@@ -26,7 +24,7 @@ use tokio::time::timeout;
 )]
 pub(crate) async fn purge(
     ctx: CustomContext<'_>,
-    #[description = "Channel to purge"] channel: Channel,
+    #[description = "Channel to purge"] channel: Option<Channel>,
     #[description = "Number of messages to purge"] amount: u64,
     #[description = "Purge from the specified member"] user: Option<Member>,
 ) -> Result<(), Error> {
@@ -57,7 +55,13 @@ pub(crate) async fn purge(
     let amount = amount + 1;
 
     let http = ctx.http();
-    let messages = channel.id().messages_iter(&http);
+
+    let channel_id = match channel {
+        Some(channel) => channel.id(),
+        None => ctx.channel_id(),
+    };
+
+    let messages = channel_id.messages_iter(&http);
     let mut message_ids: Vec<MessageId> = Vec::new();
 
     pin_mut!(messages);
@@ -93,7 +97,7 @@ pub(crate) async fn purge(
 
     // separate into chunks of 100 messages.
     for chunk in bulk_ids.chunks(100) {
-        match channel.id().delete_messages(&http, chunk).await {
+        match channel_id.delete_messages(&http, chunk).await {
             Ok(_) => {
                 deleted_count += chunk.len() as u64;
             }
@@ -112,7 +116,7 @@ pub(crate) async fn purge(
     for id in old_ids {
         delete_interval.tick().await;
 
-        match channel.id().delete_message(&http, id).await {
+        match channel_id.delete_message(&http, id).await {
             Ok(_) => deleted_count += 1,
             Err(error) => {
                 log::error!("Failed to delete message {id}: {:#?}", error);
@@ -123,9 +127,9 @@ pub(crate) async fn purge(
 
     #[allow(unused_assignments)]
     let mut description = if failed_count > 0 {
-        format!("Deleted {deleted_count} message(s). Failed to delete {failed_count} message(s).")
+        format!("Deleted {} message(s). Failed to delete {failed_count} message(s).", deleted_count - 1)
     } else {
-        format!("Deleted {deleted_count} message(s).")
+        format!("Deleted {} message(s).", deleted_count - 1)
     };
 
     if user.is_some() {

@@ -84,6 +84,7 @@ async fn main() {
         commands::basic_utils::help::help(),
         commands::moderation::kick::kick(),
         commands::moderation::ban::ban(),
+        commands::moderation::unban::unban(),
         commands::moderation::lock::lock(),
         commands::moderation::unlock::unlock(),
         commands::moderation::purge::purge(),
