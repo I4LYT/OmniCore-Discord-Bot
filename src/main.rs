@@ -141,7 +141,7 @@ async fn main() {
                         log::error!("Error while handling command: {}", err);
                         let _ = err.ctx().unwrap().send(CreateReply::default().embed(
                             CreateEmbed::new()
-                                .description(format!("There was an error while processing your command: \n ```{}```", err.to_string().replace("`", "'")) )
+                                .description(format!("There was an error while processing your command: \n ```{}```\nPlease report this issue to https://github.com/Shreshtgaming606/OmniCore-Discord-Bot", err.to_string().replace("`", "'")) )
                                 .title(":x: Internal (sometimes user) Error")
                                 .timestamp(Timestamp::now())
                                 .color(Colour::RED),
