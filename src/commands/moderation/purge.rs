@@ -39,7 +39,10 @@ pub(crate) async fn purge(
     //! deleting 100 messages that are older than 14 days will take around 5 minutes.
 
     // broadcast typing indicator
-    let typing = poise::serenity_prelude::Typing::start(ctx.serenity_context().http.clone(), ctx.channel_id());
+    let typing = poise::serenity_prelude::Typing::start(
+        ctx.serenity_context().http.clone(),
+        ctx.channel_id(),
+    );
 
     if amount == 0 {
         let res = build_message_reply(
@@ -127,7 +130,10 @@ pub(crate) async fn purge(
 
     #[allow(unused_assignments)]
     let mut description = if failed_count > 0 {
-        format!("Deleted {} message(s). Failed to delete {failed_count} message(s).", deleted_count - 1)
+        format!(
+            "Deleted {} message(s). Failed to delete {failed_count} message(s).",
+            deleted_count - 1
+        )
     } else {
         format!("Deleted {} message(s).", deleted_count - 1)
     };
@@ -172,7 +178,6 @@ pub(crate) async fn purge(
 
         tokio::time::sleep(std::time::Duration::from_secs(10)).await;
         let _ = message.delete(&http).await;
-
     }
 
     Ok(())

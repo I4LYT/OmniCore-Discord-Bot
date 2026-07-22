@@ -18,6 +18,7 @@ use std::collections::HashSet;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
 
+#[derive(Clone, Debug, Copy)]
 struct Data {}
 type Error = Box<dyn std::error::Error + Send + Sync>;
 type CustomContext<'a> = poise::Context<'a, Data, Error>;
@@ -137,9 +138,9 @@ async fn main() {
                     }
 
                     if err.ctx().is_none() && !skip {
-                        log::error!("Error while handling command (context is not availible): {}", err);
+                        log::error!("Error while handling command (context is not available): {:#?}", err);
                     } else if !skip {
-                        log::error!("Error while handling command: {}", err);
+                        log::error!("Error while handling command: {:#?}", err);
                         let _ = err.ctx().unwrap().send(CreateReply::default().embed(
                             CreateEmbed::new()
                                 .description(format!("There was an error while processing your command: \n ```{}```\nPlease report this issue to https://github.com/Shreshtgaming606/OmniCore-Discord-Bot", err.to_string().replace("`", "'")) )
