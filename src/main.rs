@@ -89,7 +89,8 @@ async fn main() {
         commands::moderation::lock::lock(),
         commands::moderation::unlock::unlock(),
         commands::moderation::purge::purge(),
-        commands::moderation::time::time()
+        commands::moderation::time::time(),
+        commands::moderation::untime::untime(),
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();

@@ -60,7 +60,11 @@ pub fn parse_duration(input: &str) -> Result<Duration, DurationParseError> {
         };
 
         total_secs = total_secs
-            .checked_add(value.checked_mul(secs_per_unit).ok_or(DurationParseError::Overflow)?)
+            .checked_add(
+                value
+                    .checked_mul(secs_per_unit)
+                    .ok_or(DurationParseError::Overflow)?,
+            )
             .ok_or(DurationParseError::Overflow)?;
     }
 

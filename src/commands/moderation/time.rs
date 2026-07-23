@@ -1,7 +1,10 @@
+use crate::commands::{build_message_reply, parse_duration};
 use crate::{CustomContext, Error};
 use poise::CreateReply;
-use poise::serenity_prelude::{Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, DiscordJsonError, Error as SError, ErrorResponse, HttpError, Member, Mentionable, StatusCode, Timestamp, EditMember};
-use crate::commands::{parse_duration, build_message_reply};
+use poise::serenity_prelude::{
+    Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, DiscordJsonError, EditMember,
+    Error as SError, ErrorResponse, HttpError, Member, Mentionable, StatusCode, Timestamp,
+};
 
 const MAX_TIMEOUT_SECS: u64 = 28 * 24 * 60 * 60; // 28 days
 
@@ -68,16 +71,17 @@ pub(crate) async fn time(
 
     let until = chrono::Utc::now() + chrono::Duration::seconds(parsed.as_secs() as i64);
 
-    match ctx.http()
+    match ctx
+        .http()
         .as_ref()
         .edit_member(
             member.guild_id,
             member.user.id,
-            &EditMember::new()
-                .disable_communication_until(until.to_rfc3339()),
+            &EditMember::new().disable_communication_until(until.to_rfc3339()),
             Some(&reason),
         )
-        .await {
+        .await
+    {
         Ok(_) => {}
         Err(SError::Http(HttpError::UnsuccessfulRequest(ErrorResponse {
             status_code: StatusCode::FORBIDDEN,
@@ -133,4 +137,3 @@ pub(crate) async fn time(
 
     Ok(())
 }
-
