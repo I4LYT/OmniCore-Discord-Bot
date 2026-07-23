@@ -193,11 +193,16 @@ pub(crate) async fn on_mention(
         }
     };
 
+    let mut message = res.message.content.clone();
+    if message.trim().is_empty() {
+        message = "AI returned no response.".to_string();
+    }
+
     // Try to reply (threads the response off the original message). If the original message was
     // deleted in the meantime, Discord rejects the message_reference and serenity surfaces that
     // as an error — fall back to a plain channel send instead of failing the whole handler.
     let sent = match msg
-        .reply(ctx.http.clone(), res.message.content.clone())
+        .reply(ctx.http.clone(), &message)
         .await
     {
         Ok(sent) => sent,
@@ -208,14 +213,14 @@ pub(crate) async fn on_mention(
                 e
             );
             msg.channel_id
-                .say(ctx.http.clone(), res.message.content.clone())
+                .say(ctx.http.clone(), &message)
                 .await?
         }
     };
 
     let now = Utc::now().timestamp();
     let response_doc = doc! {
-        "content": res.message.content.clone(),
+        "content": &message,
         "author": {
             "id": "Assistant",
             "name": "Assistant",

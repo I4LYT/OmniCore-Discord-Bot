@@ -34,7 +34,7 @@ pub(crate) async fn disapprove(
             ctx.send(build_message_reply(
                 ":x: Missing Guild ID",
                 "Please provide a guild ID to disapprove AI usage in.",
-                Colour::RED,
+                Colour::from_rgb(0, 255, 0),
                 false,
             ))
             .await?;
