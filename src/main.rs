@@ -17,6 +17,8 @@ use serenity::prelude::*;
 use std::collections::HashSet;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
+use ollama_rs::Ollama;
+use crate::commands::ai::init_ollama::init_ollama;
 
 #[derive(Clone, Debug, Copy)]
 struct Data {}
@@ -25,6 +27,7 @@ type CustomContext<'a> = poise::Context<'a, Data, Error>;
 struct Handler;
 
 static START_TIME: OnceCell<chrono::DateTime<chrono::Utc>> = OnceCell::new();
+static OLLAMA: OnceCell<Ollama> = OnceCell::new();
 
 #[async_trait]
 impl EventHandler for Handler {
@@ -62,6 +65,50 @@ async fn get_guild_owner_id(ctx: &CustomContext<'_>) -> serenity::UserId {
     ctx.guild().unwrap().owner_id
 }
 
+async fn event_handler(
+    ctx: &Context,
+    event: &serenity::FullEvent,
+    framework: poise::FrameworkContext<'_, Data, Error>,
+    data: &Data,
+) -> Result<(), Error> {
+    match event {
+        serenity::FullEvent::Message { new_message } => {
+            // ignore bots (including ourselves) to avoid loops
+            if new_message.author.bot {
+                return Ok(());
+            }
+
+            let bot_id = ctx.cache().expect("Failed to access cache").current_user().id;
+
+            let is_mentioned = new_message.mentions.iter().any(|u| u.id == bot_id);
+
+            let is_reply_to_bot = if let Some(referenced) = &new_message.referenced_message {
+                referenced.author.id == bot_id
+            } else {
+                false
+            };
+
+            if is_mentioned || is_reply_to_bot {
+                handle_bot_mention(ctx, new_message, data, event, framework).await?;
+            }
+        }
+        _ => {}
+    }
+    Ok(())
+}
+
+async fn handle_bot_mention(
+    ctx: &Context,
+    msg: &serenity::Message,
+    data: &Data,
+    event: &serenity::FullEvent,
+    framework: poise::FrameworkContext<'_, Data, Error>,
+) -> Result<(), Error> {
+    crate::commands::ai::mention::on_mention(ctx, msg, data, event, framework).await?;
+    
+    Ok(())
+}
+
 #[tokio::main]
 async fn main() {
     START_TIME
@@ -71,6 +118,10 @@ async fn main() {
     logging::init_logging();
     log::info!("Starting OmniCore Discord Bot...");
     config::init_config();
+
+    // run init ollama here
+    init_ollama().await;
+
     let _ = database::mongo_connect()
         .await
         .expect("Failed to connect to MongoDB");
@@ -107,13 +158,15 @@ async fn main() {
         .options(poise::FrameworkOptions {
             owners: HashSet::from([serenity::UserId::new(1157083515486220429)]),
             commands: cmds,
+            event_handler: |ctx, event, framework, data| {
+                Box::pin(event_handler(ctx, event, framework, data))
+            },
             command_check: Some(|ctx| {
                 Box::pin(async move {
                     log::info!("Checking command {} by {} in {}", ctx.command().qualified_name, get_user_name(&ctx).await, ctx.guild_id().unwrap_or(GuildId::new(1)));
                     Ok(true)
                 })
             }),
-
             on_error: |err| {
                 //TODO: Might make this auto-report to telemetry system and also give an option for people self-hosting the bot to turn this off
                 Box::pin(async move {

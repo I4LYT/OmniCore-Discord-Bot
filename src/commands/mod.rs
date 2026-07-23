@@ -1,5 +1,6 @@
 pub(crate) mod basic_utils;
 pub(crate) mod moderation;
+pub(crate) mod ai;
 
 use poise::{
     CreateReply,
