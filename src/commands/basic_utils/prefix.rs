@@ -39,7 +39,7 @@ pub(crate) async fn set_prefix(
     ctx.send(build_message_reply(
         "Updated Prefix",
         &format!("Successfully updated prefix to `{}`", new_prefix),
-        Colour::from_rgb(88, 101, 242),
+        Colour::from_rgb(0, 255, 0),
         false,
     ))
     .await?;

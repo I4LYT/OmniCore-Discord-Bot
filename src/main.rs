@@ -3,7 +3,9 @@ mod config;
 mod database;
 mod logging;
 
+use crate::commands::ai::init_ollama::init_ollama;
 use mongodb::bson::doc;
+use ollama_rs::Ollama;
 use once_cell::sync::OnceCell;
 use poise::{
     Command, CreateReply, FrameworkError,
@@ -17,8 +19,6 @@ use serenity::prelude::*;
 use std::collections::HashSet;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
-use ollama_rs::Ollama;
-use crate::commands::ai::init_ollama::init_ollama;
 
 #[derive(Clone, Debug, Copy)]
 struct Data {}
@@ -78,7 +78,11 @@ async fn event_handler(
                 return Ok(());
             }
 
-            let bot_id = ctx.cache().expect("Failed to access cache").current_user().id;
+            let bot_id = ctx
+                .cache()
+                .expect("Failed to access cache")
+                .current_user()
+                .id;
 
             let is_mentioned = new_message.mentions.iter().any(|u| u.id == bot_id);
 
@@ -104,8 +108,8 @@ async fn handle_bot_mention(
     event: &serenity::FullEvent,
     framework: poise::FrameworkContext<'_, Data, Error>,
 ) -> Result<(), Error> {
-    crate::commands::ai::mention::on_mention(ctx, msg, data, event, framework).await?;
-    
+    commands::ai::mention::on_mention(ctx, msg, data, event, framework).await?;
+
     Ok(())
 }
 
@@ -129,6 +133,11 @@ async fn main() {
         .await
         .expect("Failed to ensure indexes");
 
+    let mut owners: HashSet<serenity::UserId> = HashSet::from([]);
+
+    let owners_from_env = config::BOT_OWNERS.get().unwrap();
+    owners.extend(owners_from_env.iter().map(|id| serenity::UserId::new(*id)));
+
     let cmds: Vec<Command<Data, Box<dyn std::error::Error + Send + Sync>>> = vec![
         commands::basic_utils::ping::ping(),
         commands::basic_utils::prefix::set_prefix(),
@@ -142,6 +151,8 @@ async fn main() {
         commands::moderation::purge::purge(),
         commands::moderation::time::time(),
         commands::moderation::untime::untime(),
+        commands::ai::approve::approve(),
+        commands::ai::disapprove::disapprove(),
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
@@ -156,7 +167,7 @@ async fn main() {
 
     let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
-            owners: HashSet::from([serenity::UserId::new(1157083515486220429)]),
+            owners,
             commands: cmds,
             event_handler: |ctx, event, framework, data| {
                 Box::pin(event_handler(ctx, event, framework, data))
@@ -288,7 +299,8 @@ async fn setup_guild(guild: GuildId) {
 
     let guild_doc = doc! {
         "guild_id": guild_id.to_string(),
-        "prefix": "!" // Default prefix
+        "prefix": "!", // Default prefix
+        "ai_approved": false
     };
 
     if per_guild_settings_col

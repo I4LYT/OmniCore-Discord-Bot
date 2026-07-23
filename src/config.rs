@@ -6,6 +6,7 @@ pub(crate) static DISCORD_TOKEN: OnceCell<String> = OnceCell::new();
 pub(crate) static MONGO_URI: OnceCell<String> = OnceCell::new();
 pub(crate) static OLLAMA_BASE_URL: OnceCell<String> = OnceCell::new();
 pub(crate) static OLLAMA_MODEL: OnceCell<String> = OnceCell::new();
+pub(crate) static BOT_OWNERS: OnceCell<Vec<u64>> = OnceCell::new();
 
 pub(crate) fn init_config() {
     dotenv().ok();
@@ -27,6 +28,13 @@ pub(crate) fn init_config() {
         log::error!("OLLAMA_BASE_URL must not end with a slash");
         std::process::exit(78); // 78 is the exit code for config errors
     }
+
+    let bot_owners = env::var("BOT_OWNERS")
+        .unwrap_or("1157083515486220429,1109540816013234256".to_string()) // First is l1fe_wyra and second is Shreshtgaming606.
+        .split(',')
+        .map(|s| s.trim().parse::<u64>().expect("Invalid BOT_OWNERS value"))
+        .collect::<Vec<u64>>();
+    BOT_OWNERS.set(bot_owners).unwrap();
 
     log::info!("Config initialized!");
 }
