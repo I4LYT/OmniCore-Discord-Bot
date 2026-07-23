@@ -1,0 +1,104 @@
+// info command
+use crate::START_TIME;
+use crate::{CustomContext, Error, get_guild_name};
+use poise::CreateReply;
+use poise::serenity_prelude::Colour;
+use poise::serenity_prelude::{
+    CreateActionRow, CreateAllowedMentions, CreateButton, CreateEmbed, GuildId, Timestamp,
+};
+use reqwest;
+use std::collections::HashMap;
+
+async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
+    let url = "https://api.github.com/repos/Shreshtgaming606/OmniCore-Discord-Bot/contributors";
+    let client = reqwest::Client::new();
+    let response = client
+        .get(url)
+        .header("User-Agent", "firefox")
+        .send()
+        .await?;
+
+    let contributors: Vec<serde_json::Value> = response.json().await?;
+    let mut contributors_map = HashMap::new();
+
+    for contributor in contributors {
+        if let (Some(login), Some(html_url)) = (
+            contributor.get("login").and_then(|v| v.as_str()),
+            contributor.get("html_url").and_then(|v| v.as_str()),
+        ) {
+            contributors_map.insert(login.to_string(), html_url.to_string());
+        }
+    }
+
+    Ok(contributors_map)
+}
+
+#[poise::command(
+    slash_command,
+    prefix_command,
+    description_localized("en-US", "Shows some information about the bot."),
+    broadcast_typing,
+    category = "Utility"
+)]
+pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
+    //! Shows some information about the bot.
+    //!
+    //! Also shows contributors, fetched from
+    //! https://api.github.com/repos/Shreshtgaming606/OmniCore-Discord-Bot/contributors
+    let prefix =
+        crate::commands::basic_utils::prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1)))
+            .await;
+
+    let start_time = START_TIME.get().unwrap();
+
+    let desc = format!(
+        "
+- Server: {}
+- Shard: `{}`
+- Bot Prefix for this server: `{}`
+- GitHub: https://github.com/Shreshtgaming606/OmniCore-Discord-Bot/
+- Shard Started <t:{}:R>
+        ",
+        get_guild_name(&ctx).await,
+        ctx.serenity_context().shard_id.0,
+        prefix,
+        start_time.timestamp()
+    );
+
+    let contributors = get_contributors().await?;
+
+    let list = contributors
+        .iter()
+        .map(|(key, value)| format!("- [{}]({})", key, value))
+        .collect::<Vec<_>>()
+        .join("\n");
+
+    let contributors_desc = format!(
+        "\n\n{}\n-# These people have contributed to the development of OmniCore's Discord Bot",
+        list
+    );
+
+    let res = CreateReply::default()
+        .embed(
+            CreateEmbed::new()
+                .description(desc)
+                .title("Bot Information")
+                .color(Colour::from_rgb(88, 101, 242)),
+        )
+        .embed(
+            CreateEmbed::new()
+                .title("Contributors")
+                .description(contributors_desc)
+                .timestamp(Timestamp::now())
+                .color(Colour::from_rgb(0, 255, 0)),
+        )
+        .components(vec![CreateActionRow::Buttons(vec![
+            CreateButton::new_link("https://unloaded.steampirate.life")
+                .label("Visit the OmniCore website"),
+        ])])
+        .reply(true)
+        .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles());
+
+    ctx.send(res).await?;
+    Ok(())
+}
