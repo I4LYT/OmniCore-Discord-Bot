@@ -89,6 +89,7 @@ async fn main() {
         commands::moderation::lock::lock(),
         commands::moderation::unlock::unlock(),
         commands::moderation::purge::purge(),
+        commands::moderation::time::time()
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
@@ -123,6 +124,7 @@ async fn main() {
                     match err {
                         FrameworkError::CommandCheckFailed {error: _, ctx: _, ..} => {skip = true}, // to prevent double logging
                         FrameworkError::ArgumentParse {error: _, ctx: _, ..} => {invalid_args = true},
+                        FrameworkError::UnknownCommand {..} => {skip = true}, // to prevent double logging
                         _ => {}
                     }
 
