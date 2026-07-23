@@ -8,6 +8,7 @@ use mongodb::bson::Bson;
 use mongodb::bson::doc;
 use mongodb::options::UpdateOptions;
 use ollama_rs::generation::chat::{ChatMessage, MessageRole, request::ChatMessageRequest};
+use ollama_rs::models::ModelOptions;
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::Context;
 
@@ -175,7 +176,14 @@ pub(crate) async fn on_mention(
     let ollama = OLLAMA.get().unwrap().clone();
 
     let res = ollama
-        .send_chat_messages_with_history(&mut chat_history, ChatMessageRequest::new(model, vec![]))
+        .send_chat_messages_with_history(
+            &mut chat_history,
+            ChatMessageRequest::new(model, vec![]).options(
+                ModelOptions::default()
+                    .num_ctx(8192)
+                    .num_predict(512)
+            ),
+        )
         .await;
 
     typing.stop();
@@ -201,10 +209,7 @@ pub(crate) async fn on_mention(
     // Try to reply (threads the response off the original message). If the original message was
     // deleted in the meantime, Discord rejects the message_reference and serenity surfaces that
     // as an error — fall back to a plain channel send instead of failing the whole handler.
-    let sent = match msg
-        .reply(ctx.http.clone(), &message)
-        .await
-    {
+    let sent = match msg.reply(ctx.http.clone(), &message).await {
         Ok(sent) => sent,
         Err(e) => {
             log::warn!(
@@ -212,9 +217,7 @@ pub(crate) async fn on_mention(
                 msg.channel_id,
                 e
             );
-            msg.channel_id
-                .say(ctx.http.clone(), &message)
-                .await?
+            msg.channel_id.say(ctx.http.clone(), &message).await?
         }
     };
 
