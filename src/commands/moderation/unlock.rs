@@ -17,7 +17,7 @@ use poise::serenity_prelude::{
     guild_only,
     broadcast_typing,
     category = "Moderation",
-    description_localized("en-US", "U   nlocks a channel. /help unlock for more information")
+    description_localized("en-US", "Unlocks a channel. /help unlock for more information")
 )]
 pub(crate) async fn unlock(
     ctx: CustomContext<'_>,
