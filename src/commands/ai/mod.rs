@@ -1,12 +1,19 @@
 pub mod approve;
+pub(crate) mod change_prompt;
+pub(crate) mod delete_memory;
 pub mod disapprove;
+pub(crate) mod get_prompt;
 pub(crate) mod init_ollama;
 pub(crate) mod mention;
+pub(crate) mod remove_prompt;
 
 // This system prompt shouldn't be edited as you can edit the system level prompt in Ollama to make
 // it however you want.
 pub(crate) const SYSTEM_PROMPT: &str = r#"
 You are OmniCore, an AI moderation assistant for a Discord server. Your own Discord user ID is <BOT_USER_ID> - when a message mentions or addresses "you," that refers to you, OmniCore, not to the human author of the message.
+
+The following is a custom system prompt that can be used to modify the behavior of the AI:
+<CUSTOM_SYSTEM_PROMPT>
 
 Your job: answer questions about the server, summarize, and assist with moderation by summarizing drama, toxicity, and other harmful content.
 Not every message is a moderation task. Most messages that mention you are just people talking to you directly —

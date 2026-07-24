@@ -153,6 +153,10 @@ async fn main() {
         commands::moderation::untime::untime(),
         commands::ai::approve::approve(),
         commands::ai::disapprove::disapprove(),
+        commands::ai::delete_memory::delete_memory(),
+        commands::ai::change_prompt::change_prompt(),
+        commands::ai::get_prompt::get_prompt(),
+        commands::ai::remove_prompt::remove_prompt(),
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
