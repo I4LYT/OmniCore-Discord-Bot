@@ -6,6 +6,7 @@ pub(crate) mod get_prompt;
 pub(crate) mod init_ollama;
 pub(crate) mod mention;
 pub(crate) mod remove_prompt;
+pub(crate) mod tools;
 
 // This system prompt shouldn't be edited as you can edit the system level prompt in Ollama to make
 // it however you want.

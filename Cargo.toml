@@ -17,3 +17,6 @@ chrono = "0.4.45"
 futures = "0.3.32"
 regex = "1.13.1"
 ollama-rs = "0.3.5"
+schemars = "1.2.1"
+serde = { version = "1.0.228", features = ["derive"] }
+urlencoding = "2.1.3"
