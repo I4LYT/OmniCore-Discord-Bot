@@ -122,10 +122,12 @@ pub(crate) async fn on_mention(
 
     let mut messages = messages_doc.get_array("messages")?.clone();
 
+    let custom_system_prompt = guild_settings.get_str("ai_prompt").unwrap_or_default();
+
     messages.insert(
-        0,
-        Bson::Document(doc! {
-            "content": SYSTEM_PROMPT.to_string().replace("<BOT_USER_ID>", &framework.bot_id.to_string()),
+            0,
+            Bson::Document(doc! {
+            "content": SYSTEM_PROMPT.to_string().replace("<BOT_USER_ID>", &framework.bot_id.to_string()).replace("<CUSTOM_SYSTEM_PROMPT>", &custom_system_prompt),
             "author": {
                 "id": "0".to_string(),
                 "name": "System".to_string(),
@@ -140,7 +142,7 @@ pub(crate) async fn on_mention(
             },
             "role": "SYSTEM".to_string(),
         }),
-    );
+        );
 
     // Only USER turns carry the full JSON envelope (author/channel/guild metadata the model
     // needs to act correctly). SYSTEM and ASSISTANT turns are plain text — if assistant replies
@@ -178,11 +180,8 @@ pub(crate) async fn on_mention(
     let res = ollama
         .send_chat_messages_with_history(
             &mut chat_history,
-            ChatMessageRequest::new(model, vec![]).options(
-                ModelOptions::default()
-                    .num_ctx(8192)
-                    .num_predict(512)
-            ),
+            ChatMessageRequest::new(model, vec![])
+                .options(ModelOptions::default().num_ctx(8192).num_predict(512)),
         )
         .await;
 
