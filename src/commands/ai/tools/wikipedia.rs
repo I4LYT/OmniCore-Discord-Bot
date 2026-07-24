@@ -1,3 +1,4 @@
+/// Tool for AI to query Wikipedia.
 use ollama_rs::generation::tools::Tool;
 use reqwest::Client;
 use schemars::JsonSchema;

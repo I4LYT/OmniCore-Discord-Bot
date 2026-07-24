@@ -2,7 +2,7 @@ use super::SYSTEM_PROMPT;
 use crate::OLLAMA;
 use crate::config::{BOT_OWNERS, OLLAMA_MODEL};
 use crate::database::get_collection;
-use super::tools::wikipedia::Wikipedia;
+use super::tools::{wikipedia::Wikipedia, timeout::Timeout};
 use crate::{Data, Error};
 use chrono::Utc;
 use mongodb::bson::Bson;
@@ -22,7 +22,7 @@ const DISCORD_MESSAGE_LIMIT: usize = 2000;
 const HISTORY_WINDOW: i64 = 40;
 
 /// Max number of tool<->call round trips per mention, to bound runaway tool loops.
-const MAX_TOOL_HOPS: u8 = 3;
+const MAX_TOOL_HOPS: u8 = 8;
 
 /// Splits a message into chunks that fit Discord's per-message character limit.
 /// Prefers splitting on paragraph/line boundaries over splitting mid-word.
@@ -218,6 +218,7 @@ pub(crate) async fn on_mention(
     let ollama = OLLAMA.get().unwrap().clone();
 
     let mut wikipedia = Wikipedia::new();
+    let mut timeout = Timeout::new(ctx.clone(), msg.clone(), guild_id.clone());
 
     // Tool-call loop: send the request, and if the model asks for a tool, run it, append the
     // result, and re-send. `send_chat_messages_with_history` appends both the outgoing turns in
@@ -228,8 +229,9 @@ pub(crate) async fn on_mention(
 
     for hop in 0..=MAX_TOOL_HOPS {
         let request = ChatMessageRequest::new(model.clone(), next_turns.clone())
-            .options(ModelOptions::default().num_ctx(8192).num_predict(2048).extra("think", Value::Bool(false)))
-            .add_tool(Wikipedia::new());
+            .options(ModelOptions::default().num_ctx(8192).num_predict(8192).extra("think", Value::Bool(false)))
+            .add_tool(Wikipedia::new())
+            .add_tool(Timeout::new(ctx.clone(), msg.clone(), guild_id.clone()));
 
         let res = ollama
             .send_chat_messages_with_history(&mut chat_history, request)
@@ -270,6 +272,14 @@ pub(crate) async fn on_mention(
                         .unwrap_or_else(|e| format!("Wikipedia lookup failed: {}", e)),
                     Err(e) => format!("Invalid arguments for wikipedia_search: {}", e),
                 }
+            } else if call.function.name == Timeout::name() {
+                match serde_json::from_value(call.function.arguments.clone()) {
+                    Ok(params) => timeout
+                        .call(params)
+                        .await
+                        .unwrap_or_else(|e| format!("Timeout failed: {}", e)),
+                    Err(e) => format!("Invalid arguments for timeout: {}", e),
+                }
             } else {
                 format!("Unknown tool: {}", call.function.name)
             };
@@ -295,6 +305,10 @@ pub(crate) async fn on_mention(
             }
 
             next_turns.push(ChatMessage::tool(tool_doc.to_string()));
+            next_turns.push(ChatMessage::new(
+                MessageRole::System,
+                "Now respond to the user in plain text using the tool result above. Do not call the tool again.".to_string(),
+            ));
         }
     }
 

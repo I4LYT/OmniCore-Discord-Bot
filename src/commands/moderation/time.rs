@@ -6,7 +6,7 @@ use poise::serenity_prelude::{
     Error as SError, ErrorResponse, HttpError, Member, Mentionable, StatusCode, Timestamp,
 };
 
-const MAX_TIMEOUT_SECS: u64 = 28 * 24 * 60 * 60; // 28 days
+pub(crate) const MAX_TIMEOUT_SECS: u64 = 28 * 24 * 60 * 60; // 28 days
 
 #[poise::command(
     slash_command,
