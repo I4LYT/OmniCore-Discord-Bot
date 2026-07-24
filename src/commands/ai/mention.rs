@@ -11,6 +11,7 @@ use ollama_rs::generation::chat::{ChatMessage, MessageRole, request::ChatMessage
 use ollama_rs::models::ModelOptions;
 use poise::serenity_prelude as serenity;
 use poise::serenity_prelude::Context;
+use serde_json::Value;
 
 /// Max number of messages to keep in the context window. Excludes sys prompt
 const HISTORY_WINDOW: i64 = 40;
@@ -181,7 +182,7 @@ pub(crate) async fn on_mention(
         .send_chat_messages_with_history(
             &mut chat_history,
             ChatMessageRequest::new(model, vec![])
-                .options(ModelOptions::default().num_ctx(8192).num_predict(512)),
+                .options(ModelOptions::default().num_ctx(8192).num_predict(2048).extra("think", Value::Bool(false))),
         )
         .await;
 
