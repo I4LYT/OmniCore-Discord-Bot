@@ -23,7 +23,8 @@ pub async fn help(
     let config = poise::builtins::HelpConfiguration {
         extra_text_at_bottom: &format!(
             "Type {}help command for more info on a command. Mention (@) the bot to talk to the AI.\
-            \nIf you are trying to enter in text NOT using slash-commands, put `\"` around the text. This doesn't apply to commands that have only one text field",
+            \nIf you are trying to enter in text NOT using slash-commands, put `\"` around the text. This doesn't apply to commands that have only one text field\n\n\
+            Do you want OmniCore AI to follow your own rules? Run change_prompt to add your own rules.",
             prefix
         ),
         include_description: true,
