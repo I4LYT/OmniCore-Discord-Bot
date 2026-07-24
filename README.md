@@ -14,7 +14,7 @@ services:
   omnicore_discord_bot:
     build: .
     container_name: omnicore_discord_bot
-    image: ghcr.io/Shreshtgaming606/omnicore_discord_bot:latest
+    image: ghcr.io/shreshtgaming606/omnicore_discord_bot:latest
     environment:
       - DISCORD_TOKEN={your token here}
       - OLLAMA_BASE_URL={ollama url here}
