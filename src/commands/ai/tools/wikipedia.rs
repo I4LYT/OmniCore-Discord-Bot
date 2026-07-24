@@ -40,7 +40,7 @@ impl Tool for Wikipedia {
         );
 
         let client = Client::builder()
-            .user_agent("OmniCore-Discord-Bot/1.0 (https://wyra.net)")
+            .user_agent("OmniCore-Discord-Bot/1.0 (https://steampirate.life)")
             .build()?;
 
         let resp = client.get(&url).send().await?;
