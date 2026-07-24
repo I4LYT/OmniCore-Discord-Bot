@@ -11,10 +11,10 @@ Build the binary first then simply run it, you may need to make a .env file with
 Run this in Docker Compose:
 ```yaml
 services:
-  omnicore_bot:
+  omnicore_discord_bot:
     build: .
-    container_name: omnicore_bot
-    image: ghcr.io/Shreshtgaming606/omnicore_bot:latest
+    container_name: omnicore_discord_bot
+    image: ghcr.io/shreshtgaming606/omnicore_discord_bot:latest
     environment:
       - DISCORD_TOKEN={your token here}
       - OLLAMA_BASE_URL={ollama url here}

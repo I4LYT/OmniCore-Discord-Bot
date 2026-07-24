@@ -123,7 +123,6 @@ async fn main() {
     log::info!("Starting OmniCore Discord Bot...");
     config::init_config();
 
-    // run init ollama here
     init_ollama().await;
 
     let _ = database::mongo_connect()
@@ -189,10 +188,13 @@ async fn main() {
                     let mut skip = false;
                     #[allow(unused)]
                     let mut invalid_args = false;
+                    #[allow(unused)]
+                    let mut not_an_owner = false;
 
                     match err {
                         FrameworkError::CommandCheckFailed {error: _, ctx: _, ..} => {skip = true}, // to prevent double logging
                         FrameworkError::ArgumentParse {error: _, ctx: _, ..} => {invalid_args = true},
+                        FrameworkError::NotAnOwner {..} => {skip = true; not_an_owner = true}
                         FrameworkError::UnknownCommand {..} => {skip = true}, // to prevent double logging
                         _ => {}
                     }
@@ -206,6 +208,16 @@ async fn main() {
                                 .color(Colour::RED),
                         ).reply(true).ephemeral(true)).await;
                         return;
+                    }
+
+                    if not_an_owner {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description(format!("You are not an owner of this bot, you cannot use this command.\n{}", err.to_string().replace("`", "'")))
+                                .title(":x: Not an Owner")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::RED),
+                        ).reply(true).ephemeral(true)).await;
                     }
 
                     if err.ctx().is_none() && !skip {
