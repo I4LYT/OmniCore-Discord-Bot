@@ -93,5 +93,14 @@ pub(crate) async fn unlock(
 
     let _ = locked_channels_col.delete_one(lock_doc).await?;
 
+    let res = build_message_reply(
+        "Channel unlocked",
+        "This channel has been unlocked.",
+        Colour::from_rgb(0, 255, 0),
+        false,
+    );
+    
+    ctx.send(res).await?;
+    
     return Ok(());
 }

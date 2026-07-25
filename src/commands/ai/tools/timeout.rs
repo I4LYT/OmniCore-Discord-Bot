@@ -9,7 +9,7 @@ use poise::serenity_prelude::{GuildId, Context, CacheHttp, EditMember, Message};
 
 #[derive(Deserialize, JsonSchema)]
 pub struct Params {
-    #[schemars(description = "The duration of the timeout (e.g. 1d12h or 1min, 2h, 30s)")]
+    #[schemars(description = "The duration of the timeout (max of 28 days) (e.g. 1d12h or 1min, 2h, 30s)")]
     duration: String,
     #[schemars(description = "The reason for the timeout")]
     reason: String,
