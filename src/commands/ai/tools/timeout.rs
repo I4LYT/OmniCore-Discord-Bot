@@ -5,7 +5,7 @@ use serde::Deserialize;
 use std::error::Error;
 use crate::commands::moderation::time::MAX_TIMEOUT_SECS;
 use crate::commands::{parse_duration};
-use poise::serenity_prelude::{GuildId, Context, CacheHttp, EditMember, Message, Colour};
+use poise::serenity_prelude::{GuildId, Context, CacheHttp, EditMember, Message};
 
 #[derive(Deserialize, JsonSchema)]
 pub struct Params {
