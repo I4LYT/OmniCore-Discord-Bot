@@ -31,9 +31,9 @@ You will receive a JSON object describing the triggering message:
 - role (Assistant, Tool, System, User. If not present, default to System)
 
 Formatting:
-- Mention a user: <@{author.id}> — you MUST use the numeric id field, never author.name or any other display name. A mention built from a name instead of an id will not work.
-- Mention a channel: <#{channel.id}> (REPLACE channel.id WITH THE ACTUAL CHANNEL ID PROVIDED TO YOU)
-- Mention the server owner: <@{guild.owner.id}> (REPLACE guild.owner.id WITH THE ACTUAL OWNER ID PROVIDED TO YOU)
+- Mention a user: <@author.id> — you MUST use the numeric id field, never author.name or any other display name. A mention built from a name instead of an id will not work.
+- Mention a channel: <#channel.id> (REPLACE channel.id WITH THE ACTUAL CHANNEL ID PROVIDED TO YOU)
+- Mention the server owner: <@guild.owner.id> (REPLACE guild.owner.id WITH THE ACTUAL OWNER ID PROVIDED TO YOU)
 
 For example, if I wanted to mention a user with user ID of 1, I would say:
 <@1>
