@@ -7,8 +7,8 @@ use std::error::Error;
 
 #[derive(Deserialize, JsonSchema)]
 pub struct Params {
-    #[schemars(description = "The topic or article title to search for on Wikipedia")]
-    query: String,
+    #[schemars(description = "The key to get the Wikipedia article for")]
+    key: String,
 }
 
 #[derive(Default)]
@@ -24,17 +24,24 @@ impl Tool for Wikipedia {
     type Params = Params;
 
     fn name() -> &'static str {
-        "wikipedia_search"
+        "wikipedia_get"
     }
 
     fn description() -> &'static str {
-        "Search Wikipedia and return a plain-text summary of the top matching article. \
-         Use this for factual questions about people, places, events, or concepts."
+        "Get a Wikipedia article by the key and return a plain-text summary of the article. \
+         Use this for factual questions about people, places, events, or concepts.\
+         First use the wikipedia_search tool to find the key for the article you want to get.\
+         This must NOT contain any spaces."
     }
 
     async fn call(&mut self, params: Self::Params) -> Result<String, Box<dyn Error + Sync + Send>> {
-        let params_replaced = params.query.replace(" ", "_");
-        let encoded = urlencoding::encode(&params_replaced);
+        if params.key.contains(" ") {
+            return Ok(format!(
+                "Please remove any spaces from the query '{}'.",
+                params.key
+            ));
+        }
+        let encoded = urlencoding::encode(&params.key);
         let url = format!(
             "https://en.wikipedia.org/api/rest_v1/page/summary/{}",
             encoded
@@ -47,7 +54,7 @@ impl Tool for Wikipedia {
         let resp = client.get(&url).send().await?;
 
         if !resp.status().is_success() {
-            return Ok(format!("No Wikipedia article found for '{}'.", params.query));
+            return Ok(format!("No Wikipedia article found for '{}'.", params.key));
         }
 
         let json: serde_json::Value = resp.json().await?;

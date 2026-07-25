@@ -1,15 +1,17 @@
+use crate::commands::moderation::time::MAX_TIMEOUT_SECS;
+use crate::commands::parse_duration;
 /// Tool for AI to timeout people for aggressive behavior.
 use ollama_rs::generation::tools::Tool;
+use poise::serenity_prelude::{CacheHttp, Context, EditMember, GuildId, Message};
 use schemars::JsonSchema;
 use serde::Deserialize;
 use std::error::Error;
-use crate::commands::moderation::time::MAX_TIMEOUT_SECS;
-use crate::commands::{parse_duration};
-use poise::serenity_prelude::{GuildId, Context, CacheHttp, EditMember, Message};
 
 #[derive(Deserialize, JsonSchema)]
 pub struct Params {
-    #[schemars(description = "The duration of the timeout (max of 28 days) (e.g. 1d12h or 1min, 2h, 30s)")]
+    #[schemars(
+        description = "The duration of the timeout (max of 28 days) (e.g. 1d12h or 1min, 2h, 30s)"
+    )]
     duration: String,
     #[schemars(description = "The reason for the timeout")]
     reason: String,
@@ -23,7 +25,11 @@ pub struct Timeout {
 
 impl Timeout {
     pub fn new(ctx: Context, message: Message, guild_id: GuildId) -> Self {
-        Self { context: ctx, message, guild_id }
+        Self {
+            context: ctx,
+            message,
+            guild_id,
+        }
     }
 }
 
@@ -46,7 +52,9 @@ impl Tool for Timeout {
         let parsed = match parse_duration(&duration) {
             Ok(d) => d,
             Err(_) => {
-                return Err("Invalid duration. Try something like `20m`, `2days`, or `1week`.".into());
+                return Err(
+                    "Invalid duration. Try something like `20m`, `2days`, or `1week`.".into(),
+                );
             }
         };
 
@@ -61,7 +69,8 @@ impl Tool for Timeout {
         let until = chrono::Utc::now() + chrono::Duration::seconds(parsed.as_secs() as i64);
         let ctx = &self.context;
 
-        let result = ctx.http()
+        let result = ctx
+            .http()
             .as_ref()
             .edit_member(
                 self.guild_id,
@@ -75,7 +84,8 @@ impl Tool for Timeout {
             return Err(format!(
                 "Failed to timeout user {}: {}. Params were: duration={}, reason={}",
                 self.message.author.id, e, params.duration, params.reason
-            ).into());
+            )
+            .into());
         }
 
         let extract = format!(

@@ -7,6 +7,7 @@ use crate::commands::ai::init_ollama::init_ollama;
 use mongodb::bson::doc;
 use ollama_rs::Ollama;
 use once_cell::sync::OnceCell;
+use poise::serenity_prelude::Permissions;
 use poise::{
     Command, CreateReply, FrameworkError,
     serenity_prelude::{self as serenity, Colour, CreateEmbed, GuildId, Timestamp},
@@ -182,7 +183,6 @@ async fn main() {
                 })
             }),
             on_error: |err| {
-                //TODO: Might make this auto-report to telemetry system and also give an option for people self-hosting the bot to turn this off
                 Box::pin(async move {
                     #[allow(unused)]
                     let mut skip = false;
@@ -190,13 +190,27 @@ async fn main() {
                     let mut invalid_args = false;
                     #[allow(unused)]
                     let mut not_an_owner = false;
+                    #[allow(unused)]
+                    let mut missing_user_permissions: Option<Permissions> = None;
 
                     match err {
                         FrameworkError::CommandCheckFailed {error: _, ctx: _, ..} => {skip = true}, // to prevent double logging
                         FrameworkError::ArgumentParse {error: _, ctx: _, ..} => {invalid_args = true},
                         FrameworkError::NotAnOwner {..} => {skip = true; not_an_owner = true}
                         FrameworkError::UnknownCommand {..} => {skip = true}, // to prevent double logging
+                        FrameworkError::MissingUserPermissions {missing_permissions, .. } => {missing_user_permissions = missing_permissions;}
                         _ => {}
+                    }
+
+                    if missing_user_permissions.is_some() {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description(format!("You are missing the following permissions to use this command: \n```{}```\nPlease contact the server owner to request the permissions.", missing_user_permissions.unwrap().to_string().replace("`", "'")))
+                                .title(":x: Missing Permissions")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::RED),
+                        ).reply(true).ephemeral(true)).await;
+                        return;
                     }
 
                     if invalid_args {
