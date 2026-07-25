@@ -1,8 +1,8 @@
 use super::SYSTEM_PROMPT;
+use super::tools::{timeout::Timeout, wikipedia::Wikipedia, wikipedia_search::WikipediaSearch};
 use crate::OLLAMA;
 use crate::config::{BOT_OWNERS, OLLAMA_MODEL};
 use crate::database::get_collection;
-use super::tools::{wikipedia::Wikipedia, timeout::Timeout};
 use crate::{Data, Error};
 use chrono::Utc;
 use mongodb::bson::Bson;
@@ -219,6 +219,7 @@ pub(crate) async fn on_mention(
 
     let mut wikipedia = Wikipedia::new();
     let mut timeout = Timeout::new(ctx.clone(), msg.clone(), guild_id.clone());
+    let mut wikipedia_search = WikipediaSearch::new();
 
     // Tool-call loop: send the request, and if the model asks for a tool, run it, append the
     // result, and re-send. `send_chat_messages_with_history` appends both the outgoing turns in
@@ -229,8 +230,14 @@ pub(crate) async fn on_mention(
 
     for hop in 0..=MAX_TOOL_HOPS {
         let request = ChatMessageRequest::new(model.clone(), next_turns.clone())
-            .options(ModelOptions::default().num_ctx(8192).num_predict(8192).extra("think", Value::Bool(false)))
+            .options(
+                ModelOptions::default()
+                    .num_ctx(8192)
+                    .num_predict(8192)
+                    .extra("think", Value::Bool(false)),
+            )
             .add_tool(Wikipedia::new())
+            .add_tool(WikipediaSearch::new())
             .add_tool(Timeout::new(ctx.clone(), msg.clone(), guild_id.clone()));
 
         let res = ollama
@@ -246,7 +253,7 @@ pub(crate) async fn on_mention(
                     ctx.http.clone(),
                     "Sorry, I couldn't process that — something went wrong on my end.",
                 )
-                    .await?;
+                .await?;
                 return Err(e.into());
             }
         };
@@ -270,7 +277,7 @@ pub(crate) async fn on_mention(
                         .call(params)
                         .await
                         .unwrap_or_else(|e| format!("Wikipedia lookup failed: {}", e)),
-                    Err(e) => format!("Invalid arguments for wikipedia_search: {}", e),
+                    Err(e) => format!("Invalid arguments for wikipedia: {}", e),
                 }
             } else if call.function.name == Timeout::name() {
                 match serde_json::from_value(call.function.arguments.clone()) {
@@ -279,6 +286,14 @@ pub(crate) async fn on_mention(
                         .await
                         .unwrap_or_else(|e| format!("Timeout failed: {}", e)),
                     Err(e) => format!("Invalid arguments for timeout: {}", e),
+                }
+            } else if call.function.name == WikipediaSearch::name() {
+                match serde_json::from_value(call.function.arguments.clone()) {
+                    Ok(params) => wikipedia_search
+                        .call(params)
+                        .await
+                        .unwrap_or_else(|e| format!("Wikipedia search failed: {}", e)),
+                    Err(e) => format!("Invalid arguments for wikipedia_search: {}", e),
                 }
             } else {
                 format!("Unknown tool: {}", call.function.name)
@@ -307,7 +322,7 @@ pub(crate) async fn on_mention(
             next_turns.push(ChatMessage::tool(tool_doc.to_string()));
             next_turns.push(ChatMessage::new(
                 MessageRole::System,
-                "Now respond to the user in plain text using the tool result above. Do not call the tool again.".to_string(),
+                "Now respond to the user in plain text using the tool result above.".to_string(),
             ));
         }
     }
@@ -317,12 +332,15 @@ pub(crate) async fn on_mention(
     let res = match final_res {
         Some(res) => res,
         None => {
-            log::error!("Tool loop ended without a final response for guild {}", guild_id);
+            log::error!(
+                "Tool loop ended without a final response for guild {}",
+                guild_id
+            );
             msg.reply(
                 ctx.http.clone(),
                 "Sorry, I couldn't process that - something went wrong on my end.",
             )
-                .await?;
+            .await?;
             return Err("Tool loop ended without a final response".into());
         }
     };
@@ -340,10 +358,10 @@ pub(crate) async fn on_mention(
         Ok(sent) => sent,
         Err(e) => {
             log::warn!(
-            "Reply failed (original message likely deleted) in channel {}: {}. Falling back to plain send.",
-            msg.channel_id,
-            e
-        );
+                "Reply failed (original message likely deleted) in channel {}: {}. Falling back to plain send.",
+                msg.channel_id,
+                e
+            );
             msg.channel_id.say(ctx.http.clone(), &chunks[0]).await?
         }
     };

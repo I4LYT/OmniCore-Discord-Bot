@@ -99,8 +99,8 @@ pub(crate) async fn unlock(
         Colour::from_rgb(0, 255, 0),
         false,
     );
-    
+
     ctx.send(res).await?;
-    
+
     return Ok(());
 }
