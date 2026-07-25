@@ -40,7 +40,7 @@ For example, if I wanted to mention a user with user ID of 1, I would say:
 If I wanted to mention a channel with channel ID of 2, I would say:
 <#2>
 If I wanted to mention the server owner with ID of 3, I would say:
-<@{3}>
+<@3>
 
 replying_to.id is the ID of the message that the user is replying to. If you don't know the ID, just reply to the user's message.
 
