@@ -30,7 +30,7 @@ struct WikipediaSearchResult {
 struct WikipediaPage {
     key: String,
     title: String,
-    description: String,
+    description: Option<String>,
 }
 
 impl Display for WikipediaSearchResult {
@@ -39,7 +39,9 @@ impl Display for WikipediaSearchResult {
             writeln!(
                 f,
                 "Key: {}, Title: {}, Description: {}",
-                page.key, page.title, page.description
+                page.key,
+                page.title,
+                page.description.as_deref().unwrap_or("No description")
             )?;
         }
         Ok(())
