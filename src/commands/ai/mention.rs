@@ -91,6 +91,8 @@ pub(crate) async fn on_mention(
         return Ok(());
     }
 
+    log::info!("Mentioned in guild {}", guild_id);
+
     let typing = poise::serenity_prelude::Typing::start(ctx.http.clone(), msg.channel_id);
 
     let guild_owner_id = ctx
@@ -408,5 +410,6 @@ pub(crate) async fn on_mention(
         );
     }
 
+    log::info!("Finished mention in guild {}", guild_id);
     Ok(())
 }

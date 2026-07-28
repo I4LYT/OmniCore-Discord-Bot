@@ -43,7 +43,7 @@ impl Tool for Wikipedia {
         }
         let encoded = urlencoding::encode(&params.key);
         let url = format!(
-            "https://en.wikipedia.org/api/rest_v1/page/summary/{}",
+            "https://en.wikipedia.org/w/api.php?action=query&prop=extracts&explaintext=true&titles={}&format=json",
             encoded
         );
 
@@ -59,9 +59,13 @@ impl Tool for Wikipedia {
 
         let json: serde_json::Value = resp.json().await?;
         let extract = json
-            .get("extract")
-            .and_then(|v| v.as_str())
-            .unwrap_or("No summary available.");
+            .get("query")
+            .and_then(|q| q.get("pages"))
+            .and_then(|p| p.as_object())
+            .and_then(|o| o.values().next())
+            .and_then(|v| v.get("extract"))
+            .and_then(|e| e.as_str())
+            .unwrap_or("No extract found for this article.");
 
         Ok(extract.to_string())
     }

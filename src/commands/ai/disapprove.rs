@@ -56,7 +56,7 @@ pub(crate) async fn disapprove(
             "Successfully updated AI approval status for guild `{}`",
             guild_id.unwrap().to_string()
         ),
-        Colour::from_rgb(255, 0, 0),
+        Colour::from_rgb(0, 255, 0),
         false,
     ))
     .await?;

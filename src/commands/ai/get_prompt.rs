@@ -39,7 +39,7 @@ pub(crate) async fn get_prompt(ctx: CustomContext<'_>) -> Result<(), Error> {
             "The current system prompt for this server is:\n\n```{}```",
             prompt
         ),
-        Colour::from_rgb(0, 255, 0),
+        Colour::from_rgb(88, 101, 242),
         false,
     ))
     .await?;
