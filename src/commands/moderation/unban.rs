@@ -1,7 +1,8 @@
 use crate::{CustomContext, Error};
 use poise::CreateReply;
 use poise::serenity_prelude::{
-    Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, Mentionable, Timestamp, UserId,
+    Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, DiscordJsonError,
+    Error as SError, ErrorResponse, HttpError, Mentionable, StatusCode, Timestamp, UserId,
 };
 
 #[poise::command(
@@ -45,13 +46,41 @@ pub(crate) async fn unban(
         }
     };
 
-    ctx.http()
+    match ctx
+        .http()
         .remove_ban(
             ctx.guild_id().unwrap(),
             UserId::from(user_id),
             Some(&*reason),
         )
-        .await?; // if error somehow happens, poise error handler will catch it.
+        .await
+    {
+        Ok(_) => {}
+        Err(SError::Http(HttpError::UnsuccessfulRequest(ErrorResponse {
+            status_code: StatusCode::NOT_FOUND,
+            error: DiscordJsonError { code: 10026, .. }, // user isn't banned
+            ..
+        }))) => {
+            let res = CreateReply::default()
+                .embed(
+                    CreateEmbed::new()
+                        .description("User is not banned.")
+                        .title(":x: User not banned")
+                        .timestamp(Timestamp::now())
+                        .color(Colour::from_rgb(255, 0, 0)),
+                )
+                .reply(true)
+                .allowed_mentions(CreateAllowedMentions::new().empty_users().empty_roles());
+
+            ctx.send(res).await?;
+            return Ok(());
+        }
+        Err(e) => {
+            log::error!("Error in unbanning user: {}", e);
+            log::error!("Error Details: {:#?}", e);
+            return Err(e.into());
+        }
+    }
 
     let res = CreateReply::default()
         .embed(

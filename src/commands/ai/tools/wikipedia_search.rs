@@ -81,11 +81,14 @@ impl Tool for WikipediaSearch {
         }
 
         let result: WikipediaSearchResult = resp.json().await?;
-        
+
         if result.to_string().is_empty() {
-            return Ok(format!("No Wikipedia articles found for '{}'.", params.query));
+            return Ok(format!(
+                "No Wikipedia articles found for '{}'.",
+                params.query
+            ));
         }
-        
+
         Ok(result.to_string())
     }
 }
