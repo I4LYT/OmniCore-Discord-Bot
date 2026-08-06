@@ -39,7 +39,7 @@ pub(crate) async fn time(
             let res = build_message_reply(
                 ":x: Invalid Duration",
                 "Couldn't parse that duration. Try something like `20m`, `2days`, or `1week`.",
-                Colour::RED,
+                Colour::from_rgb(255, 0, 0),
                 false,
             );
             ctx.send(res).await?;
@@ -51,7 +51,7 @@ pub(crate) async fn time(
         let res = build_message_reply(
             ":x: Invalid Duration",
             "Timeouts can't exceed 28 days.",
-            Colour::RED,
+            Colour::from_rgb(255, 0, 0),
             false,
         );
         ctx.send(res).await?;
@@ -62,7 +62,7 @@ pub(crate) async fn time(
         let res = build_message_reply(
             ":x: Invalid Duration",
             "Duration must be greater than zero.",
-            Colour::RED,
+            Colour::from_rgb(255, 0, 0),
             false,
         );
         ctx.send(res).await?;

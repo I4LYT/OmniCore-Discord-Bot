@@ -157,6 +157,9 @@ async fn main() {
         commands::ai::change_prompt::change_prompt(),
         commands::ai::get_prompt::get_prompt(),
         commands::ai::remove_prompt::remove_prompt(),
+        commands::owner_commands::all_servers::all_servers(),
+        commands::owner_commands::create_invite::create_invite(),
+        commands::owner_commands::kick_self::kick_self()
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
@@ -192,6 +195,10 @@ async fn main() {
                     let mut not_an_owner = false;
                     #[allow(unused)]
                     let mut missing_user_permissions: Option<Permissions> = None;
+                    #[allow(unused)]
+                    let mut dm_only = false;
+                    #[allow(unused)]
+                    let mut guild_only = false;
 
                     match err {
                         FrameworkError::CommandCheckFailed {error: _, ctx: _, ..} => {skip = true}, // to prevent double logging
@@ -199,7 +206,31 @@ async fn main() {
                         FrameworkError::NotAnOwner {..} => {skip = true; not_an_owner = true}
                         FrameworkError::UnknownCommand {..} => {skip = true}, // to prevent double logging
                         FrameworkError::MissingUserPermissions {missing_permissions, .. } => {missing_user_permissions = missing_permissions;}
+                        FrameworkError::DmOnly {..} => {dm_only = true}
+                        FrameworkError::GuildOnly {..} => {guild_only = true}
                         _ => {}
+                    }
+
+                    if dm_only {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
+                                .title(":x: DM Only")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::from_rgb(255, 0, 0)),
+                        ).reply(true).ephemeral(true)).await;
+                        return;
+                    }
+
+                    if guild_only {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
+                                .title(":x: Guild Only")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::from_rgb(255, 0, 0)),
+                        ).reply(true).ephemeral(true)).await;
+                        return;
                     }
 
                     if missing_user_permissions.is_some() {
@@ -208,7 +239,7 @@ async fn main() {
                                 .description(format!("You are missing the following permissions to use this command: \n```{}```\nPlease contact the server owner to request the permissions.", missing_user_permissions.unwrap().to_string().replace("`", "'")))
                                 .title(":x: Missing Permissions")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                         return;
                     }
@@ -219,7 +250,7 @@ async fn main() {
                                 .description(format!("Failed to parse arguments, please check the command usage by using the `help` command followed by the command name. e.g. `help info`\n{}", err.to_string().replace("`", "'")))
                                 .title(":x: Failed to Parse Arguments")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                         return;
                     }
@@ -230,9 +261,11 @@ async fn main() {
                                 .description(format!("You are not an owner of this bot, you cannot use this command.\n{}", err.to_string().replace("`", "'")))
                                 .title(":x: Not an Owner")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                     }
+
+
 
                     if err.ctx().is_none() && !skip {
                         log::error!("Error while handling command (context is not available): {:#?}", err);
@@ -243,7 +276,7 @@ async fn main() {
                                 .description(format!("There was an error while processing your command: \n ```{}```\nPlease report this issue to https://github.com/Shreshtgaming606/OmniCore-Discord-Bot", err.to_string().replace("`", "'")) )
                                 .title(":x: Internal (sometimes user) Error")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                     }
                 })

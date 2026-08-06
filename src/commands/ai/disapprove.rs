@@ -19,14 +19,6 @@ pub(crate) async fn disapprove(
     let per_guild_settings_col =
         get_collection("per_guild_settings").expect("Failed to load per_guild_settings collection");
 
-    if per_guild_settings_col
-        .find_one(doc! {"guild_id": ctx.guild_id().unwrap().to_string()})
-        .await?
-        .is_none()
-    {
-        setup_guild(ctx.guild_id().unwrap()).await;
-    }
-
     let mut guild_id = guild_id;
 
     if guild_id.is_none() {
@@ -34,13 +26,22 @@ pub(crate) async fn disapprove(
             ctx.send(build_message_reply(
                 ":x: Missing Guild ID",
                 "Please provide a guild ID to disapprove AI usage in.",
-                Colour::from_rgb(0, 255, 0),
+                Colour::from_rgb(255, 0, 0),
                 false,
             ))
-            .await?;
+                .await?;
+            return Ok(());
         } else {
             guild_id = Some(ctx.guild_id().unwrap());
         }
+    }
+
+    if per_guild_settings_col
+        .find_one(doc! {"guild_id": &guild_id.unwrap().to_string()})
+        .await?
+        .is_none()
+    {
+        setup_guild(ctx.guild_id().unwrap()).await;
     }
 
     let _ = per_guild_settings_col
