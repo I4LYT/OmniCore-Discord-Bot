@@ -192,6 +192,10 @@ async fn main() {
                     let mut not_an_owner = false;
                     #[allow(unused)]
                     let mut missing_user_permissions: Option<Permissions> = None;
+                    #[allow(unused)]
+                    let mut dm_only = false;
+                    #[allow(unused)]
+                    let mut guild_only = false;
 
                     match err {
                         FrameworkError::CommandCheckFailed {error: _, ctx: _, ..} => {skip = true}, // to prevent double logging
@@ -199,7 +203,31 @@ async fn main() {
                         FrameworkError::NotAnOwner {..} => {skip = true; not_an_owner = true}
                         FrameworkError::UnknownCommand {..} => {skip = true}, // to prevent double logging
                         FrameworkError::MissingUserPermissions {missing_permissions, .. } => {missing_user_permissions = missing_permissions;}
+                        FrameworkError::DmOnly {..} => {dm_only = true}
+                        FrameworkError::GuildOnly {..} => {guild_only = true}
                         _ => {}
+                    }
+
+                    if dm_only {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
+                                .title(":x: DM Only")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::RED),
+                        ).reply(true).ephemeral(true)).await;
+                        return;
+                    }
+
+                    if guild_only {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
+                                .title(":x: Guild Only")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::RED),
+                        ).reply(true).ephemeral(true)).await;
+                        return;
                     }
 
                     if missing_user_permissions.is_some() {
@@ -233,6 +261,8 @@ async fn main() {
                                 .color(Colour::RED),
                         ).reply(true).ephemeral(true)).await;
                     }
+
+
 
                     if err.ctx().is_none() && !skip {
                         log::error!("Error while handling command (context is not available): {:#?}", err);

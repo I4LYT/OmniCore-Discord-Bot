@@ -8,7 +8,10 @@ use poise::serenity_prelude::{
 };
 use reqwest;
 use std::collections::HashMap;
+use crate::config::BOT_OWNERS;
+use futures::stream::{self, StreamExt};
 
+const CONCURRENCY: usize = 5;
 async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
     let url = "https://api.github.com/repos/Shreshtgaming606/OmniCore-Discord-Bot/contributors";
     let client = reqwest::Client::new();
@@ -33,6 +36,42 @@ async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
     Ok(contributors_map)
 }
 
+async fn get_channel_and_member_counts(ctx: CustomContext<'_>) -> (usize, usize) {
+    let Ok(guilds) = ctx.http().get_guilds(None, None).await else {
+        return (0, 0);
+    };
+
+    let http = ctx.http();
+
+    let results: Vec<(usize, usize)> = stream::iter(guilds)
+        .map(|guild| {
+            let http = http;
+            async move {
+                let channels = http
+                    .get_channels(guild.id)
+                    .await
+                    .map(|c| c.len())
+                    .unwrap_or(0);
+                
+                let members = http
+                    .get_guild_members(guild.id, Some(1000), None)
+                    .await
+                    .map(|m| m.len())
+                    .unwrap_or(0);
+
+                (channels, members)
+            }
+        })
+        .buffer_unordered(CONCURRENCY)
+        .collect()
+        .await;
+
+    let total_channels: usize = results.iter().map(|(c, _)| c).sum();
+    let total_members: usize = results.iter().map(|(_, m)| m).sum();
+
+    (total_channels, total_members)
+}
+
 #[poise::command(
     slash_command,
     prefix_command,
@@ -50,19 +89,38 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
             .await;
 
     let start_time = START_TIME.get().unwrap();
+    
+    let member_count_and_channel_count = get_channel_and_member_counts(ctx.clone()).await;
+    
+    let owners = BOT_OWNERS
+        .get()
+        .unwrap()
+        .clone()
+        .into_iter()
+        .map(|id| format!("<@{}>", id))
+        .collect::<Vec<String>>()
+        .join(", ");
 
     let desc = format!(
         "
 - Server: {}
 - Shard: `{}`
+- Bot Owner(s): {}
 - Bot Prefix for this server: `{}`
 - GitHub: https://github.com/Shreshtgaming606/OmniCore-Discord-Bot/
 - Shard Started <t:{}:R>
+- In {} server(s)
+- In {} channel(s)
+- {} Total Member(s) across all server(s)
         ",
         get_guild_name(&ctx).await,
         ctx.serenity_context().shard_id.0,
+        owners,
         prefix,
-        start_time.timestamp()
+        start_time.timestamp(),
+        ctx.http().get_guilds(None, None).await?.len(),
+        member_count_and_channel_count.0,
+        member_count_and_channel_count.1
     );
 
     let contributors = get_contributors().await?;
