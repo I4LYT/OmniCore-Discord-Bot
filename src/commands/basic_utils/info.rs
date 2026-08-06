@@ -110,9 +110,9 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
 - Bot Prefix for this server: `{}`
 - GitHub: https://github.com/Shreshtgaming606/OmniCore-Discord-Bot/
 - Shard Started <t:{}:R>
-- In {} server(s)
-- In {} channel(s)
-- {} Total Member(s) across all server(s)
+- In `{}` server(s)
+- In `{}` channel(s)
+- `{}` (estimated) Total Member(s) across all server(s)
         ",
         get_guild_name(&ctx).await,
         ctx.serenity_context().shard_id.0,
