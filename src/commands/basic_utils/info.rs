@@ -1,6 +1,8 @@
 // info command
 use crate::START_TIME;
+use crate::config::BOT_OWNERS;
 use crate::{CustomContext, Error, get_guild_name};
+use futures::stream::{self, StreamExt};
 use poise::CreateReply;
 use poise::serenity_prelude::Colour;
 use poise::serenity_prelude::{
@@ -8,8 +10,6 @@ use poise::serenity_prelude::{
 };
 use reqwest;
 use std::collections::HashMap;
-use crate::config::BOT_OWNERS;
-use futures::stream::{self, StreamExt};
 
 const CONCURRENCY: usize = 5;
 async fn get_contributors() -> Result<HashMap<String, String>, reqwest::Error> {
@@ -52,12 +52,13 @@ async fn get_channel_and_member_counts(ctx: CustomContext<'_>) -> (usize, usize)
                     .await
                     .map(|c| c.len())
                     .unwrap_or(0);
-                
+
                 let members = http
-                    .get_guild_members(guild.id, Some(1000), None)
+                    .get_guild_with_counts(guild.id)
                     .await
-                    .map(|m| m.len())
-                    .unwrap_or(0);
+                    .ok()
+                    .and_then(|g| g.approximate_member_count)
+                    .unwrap_or(0) as usize;
 
                 (channels, members)
             }
@@ -89,9 +90,9 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
             .await;
 
     let start_time = START_TIME.get().unwrap();
-    
+
     let member_count_and_channel_count = get_channel_and_member_counts(ctx.clone()).await;
-    
+
     let owners = BOT_OWNERS
         .get()
         .unwrap()

@@ -157,6 +157,8 @@ async fn main() {
         commands::ai::change_prompt::change_prompt(),
         commands::ai::get_prompt::get_prompt(),
         commands::ai::remove_prompt::remove_prompt(),
+        commands::owner_commands::all_servers::all_servers(),
+        commands::owner_commands::create_invite::create_invite(),
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
