@@ -159,6 +159,7 @@ async fn main() {
         commands::ai::remove_prompt::remove_prompt(),
         commands::owner_commands::all_servers::all_servers(),
         commands::owner_commands::create_invite::create_invite(),
+        commands::owner_commands::kick_self::kick_self()
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
