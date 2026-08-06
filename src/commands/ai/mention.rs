@@ -179,6 +179,7 @@ pub(crate) async fn on_mention(
                 "name": "System".to_string(),
             },
             "timestamp": Utc::now().timestamp(),
+            "human_time": Utc::now().to_rfc3339(),
             "channel": {
                 "id": "0".to_string(),
                 "name": "System".to_string(),
@@ -191,7 +192,7 @@ pub(crate) async fn on_mention(
     );
 
     // Only USER turns carry the full JSON envelope (author/channel/guild metadata the model
-    // needs to act correctly). SYSTEM and ASSISTANT turns are plain text — if assistant replies
+    // needs to act correctly). SYSTEM and ASSISTANT turns are plain text - if assistant replies
     // are stored back into history as JSON docs, the model starts pattern-matching on its own
     // prior turns and echoes JSON back to users instead of plain text, no matter what the system
     // prompt instructs. TOOL turns keep the structured form since tool output is inherently data.
@@ -234,8 +235,8 @@ pub(crate) async fn on_mention(
         let request = ChatMessageRequest::new(model.clone(), next_turns.clone())
             .options(
                 ModelOptions::default()
-                    .num_ctx(8192)
-                    .num_predict(8192)
+                    .num_ctx(16384)
+                    .num_predict(-1)
                     .extra("think", Value::Bool(false)),
             )
             .add_tool(Wikipedia::new())
@@ -307,6 +308,7 @@ pub(crate) async fn on_mention(
                 "content": &result,
                 "author": { "id": "Tool", "name": call.function.name.clone() },
                 "timestamp": Utc::now().timestamp(),
+                "human_time": Utc::now().to_rfc3339(),
                 "channel": { "id": msg.channel_id.to_string(), "name": channel_name.clone() },
                 "guild": { "owner": { "id": guild_owner_id.clone() } },
                 "role": "TOOL".to_string(),
@@ -373,14 +375,14 @@ pub(crate) async fn on_mention(
         sent = msg.channel_id.say(ctx.http.clone(), chunk).await?;
     }
 
-    let now = Utc::now().timestamp();
     let response_doc = doc! {
         "content": &message,
         "author": {
             "id": "Assistant",
             "name": "Assistant",
         },
-        "timestamp": now,
+        "timestamp": Utc::now().timestamp(),
+        "human_time": Utc::now().to_rfc3339(),
         "channel": {
             "id": msg.channel_id.to_string(),
             "name": channel_name,
