@@ -216,7 +216,7 @@ async fn main() {
                                 .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
                                 .title(":x: DM Only")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                         return;
                     }
@@ -227,7 +227,7 @@ async fn main() {
                                 .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
                                 .title(":x: Guild Only")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                         return;
                     }
@@ -238,7 +238,7 @@ async fn main() {
                                 .description(format!("You are missing the following permissions to use this command: \n```{}```\nPlease contact the server owner to request the permissions.", missing_user_permissions.unwrap().to_string().replace("`", "'")))
                                 .title(":x: Missing Permissions")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                         return;
                     }
@@ -249,7 +249,7 @@ async fn main() {
                                 .description(format!("Failed to parse arguments, please check the command usage by using the `help` command followed by the command name. e.g. `help info`\n{}", err.to_string().replace("`", "'")))
                                 .title(":x: Failed to Parse Arguments")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                         return;
                     }
@@ -260,7 +260,7 @@ async fn main() {
                                 .description(format!("You are not an owner of this bot, you cannot use this command.\n{}", err.to_string().replace("`", "'")))
                                 .title(":x: Not an Owner")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                     }
 
@@ -275,7 +275,7 @@ async fn main() {
                                 .description(format!("There was an error while processing your command: \n ```{}```\nPlease report this issue to https://github.com/Shreshtgaming606/OmniCore-Discord-Bot", err.to_string().replace("`", "'")) )
                                 .title(":x: Internal (sometimes user) Error")
                                 .timestamp(Timestamp::now())
-                                .color(Colour::RED),
+                                .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;
                     }
                 })

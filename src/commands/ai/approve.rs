@@ -26,21 +26,22 @@ pub(crate) async fn approve(
             ctx.send(build_message_reply(
                 ":x: Missing Guild ID",
                 "Please provide a guild ID to approve AI usage in.",
-                Colour::RED,
+                Colour::from_rgb(255, 0, 0),
                 false,
             ))
-            .await?;
+                .await?;
+            return Ok(());
         } else {
             guild_id = Some(ctx.guild_id().unwrap());
         }
     }
 
     if per_guild_settings_col
-        .find_one(doc! {"guild_id": guild_id.unwrap().to_string()})
+        .find_one(doc! {"guild_id": &guild_id.unwrap().to_string()})
         .await?
         .is_none()
     {
-        setup_guild(guild_id.unwrap()).await;
+        setup_guild(ctx.guild_id().unwrap()).await;
     }
 
     let _ = per_guild_settings_col

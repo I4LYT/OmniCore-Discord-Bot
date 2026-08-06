@@ -37,7 +37,7 @@ pub async fn create_invite(ctx: CustomContext<'_>) -> Result<(), Error> {
         build_message_reply(
             ":x: Not in any servers",
             "This bot is not in any servers.",
-            Colour::RED,
+            Colour::from_rgb(255, 0, 0),
             false,
         );
         return Ok(());
