@@ -1,7 +1,7 @@
 use super::autocomplete_guild;
 use crate::{CustomContext, Error};
-use poise::serenity_prelude::{ChannelType, CreateInvite};
 use poise::serenity_prelude::GuildId;
+use poise::serenity_prelude::{ChannelType, CreateInvite};
 
 #[poise::command(
     slash_command,
@@ -25,8 +25,10 @@ pub async fn create_invite(
     let guild_id = match guild.trim().parse::<u64>() {
         Ok(id) => GuildId::new(id),
         Err(_) => {
-            ctx.say(":x: Invalid guild — please select a server from the autocomplete suggestions.")
-                .await?;
+            ctx.say(
+                ":x: Invalid guild — please select a server from the autocomplete suggestions.",
+            )
+            .await?;
             typing.stop();
             return Ok(());
         }

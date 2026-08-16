@@ -33,10 +33,18 @@ static OLLAMA: OnceCell<Ollama> = OnceCell::new();
 #[async_trait]
 impl EventHandler for Handler {
     async fn ready(&self, _: Context, ready: Ready) {
+        let guilds = ready
+            .guilds
+            .to_vec()
+            .iter()
+            .map(|g| g.id.to_string())
+            .collect::<Vec<String>>()
+            .join(", ");
         log::info!(
-            "Shard {} is connected to {}",
+            "Shard {} is connected to {} in guilds: {:#?} ",
             ready.shard.unwrap().id,
-            ready.user.name
+            ready.user.name,
+            guilds
         );
     }
 }
@@ -159,7 +167,7 @@ async fn main() {
         commands::ai::remove_prompt::remove_prompt(),
         commands::owner_commands::all_servers::all_servers(),
         commands::owner_commands::create_invite::create_invite(),
-        commands::owner_commands::kick_self::kick_self()
+        commands::owner_commands::kick_self::kick_self(),
     ];
 
     let token = config::DISCORD_TOKEN.get().unwrap();
@@ -331,7 +339,7 @@ async fn main() {
         database::mongo_shutdown().await;
         log::info!("Bot has been shutdown!");
     });
-    unwrapped_client.start_shards(4).await.unwrap(); //TODO: Make this configurable with a default value of 2
+    unwrapped_client.start_shards(4).await.unwrap();
 }
 
 async fn shutdown_signal() {
