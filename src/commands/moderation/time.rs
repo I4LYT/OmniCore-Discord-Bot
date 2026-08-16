@@ -113,10 +113,11 @@ pub(crate) async fn time(
         .embed(
             CreateEmbed::new()
                 .description(format!(
-                    "User \"{}\" timed \"{}\" for reason \"{}\"",
+                    "User \"{}\" timed \"{}\" for reason \"{}\" and until <t:{}:F>",
                     ctx.author().mention(),
                     member.mention(),
-                    reason_pre
+                    reason_pre,
+                    until.timestamp()
                 ))
                 .title("User Timed Successfully")
                 .timestamp(Timestamp::now())

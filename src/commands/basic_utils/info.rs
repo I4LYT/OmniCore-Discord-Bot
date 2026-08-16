@@ -1,8 +1,10 @@
 // info command
 use crate::START_TIME;
 use crate::config::BOT_OWNERS;
+use crate::database::get_collection;
 use crate::{CustomContext, Error, get_guild_name};
 use futures::stream::{self, StreamExt};
+use mongodb::bson::doc;
 use poise::CreateReply;
 use poise::serenity_prelude::Colour;
 use poise::serenity_prelude::{
@@ -85,6 +87,8 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
     //!
     //! Also shows contributors, fetched from
     //! https://api.github.com/repos/Shreshtgaming606/OmniCore-Discord-Bot/contributors
+    ctx.defer().await?;
+
     let prefix =
         crate::commands::basic_utils::prefix::get_prefix(ctx.guild_id().unwrap_or(GuildId::new(1)))
             .await;
@@ -103,7 +107,7 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
         .join(", ");
 
     let desc = format!(
-        "
+        "\
 - Server: {}
 - Shard: `{}`
 - Bot Owner(s): {}
@@ -124,6 +128,50 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
         member_count_and_channel_count.1
     );
 
+    let mut ai_approved = false;
+    let mut messages_processed = 0;
+
+    if ctx.guild_id().is_some() {
+        let per_guild_settings_col = get_collection("per_guild_settings")
+            .expect("Failed to load per_guild_settings collection");
+
+        let guild_settings = per_guild_settings_col
+            .find_one(doc! { "guild_id": ctx.guild_id().map(|id| id.get().to_string()) })
+            .await?;
+
+        if guild_settings.is_none() {
+            crate::setup_guild(ctx.guild_id().unwrap_or(GuildId::new(1))).await;
+        } else {
+            let guild_settings = guild_settings.unwrap();
+            let messages_col =
+                get_collection("messages").expect("Failed to load messages collection");
+            ai_approved = guild_settings
+                .get("ai_approved")
+                .and_then(|v| v.as_bool())
+                .unwrap_or(false);
+            let guild_messages = messages_col
+                .find_one(doc! { "guild_id": ctx.guild_id().map(|id| id.get().to_string()) })
+                .await?;
+            if guild_messages.is_none() {
+                messages_processed = 0;
+            } else {
+                let guild_messages = guild_messages.unwrap();
+                messages_processed = guild_messages.get_array("messages").unwrap().iter().len();
+            }
+        }
+    }
+
+    let ai_desc = format!(
+        "\
+- AI Approved: `{}`
+- AI Model: `{}`
+- Messages processed: `{}`
+        ",
+        ai_approved,
+        crate::config::OLLAMA_MODEL.get().unwrap(),
+        messages_processed
+    );
+
     let contributors = get_contributors().await?;
 
     let list = contributors
@@ -142,6 +190,13 @@ pub(crate) async fn info(ctx: CustomContext<'_>) -> Result<(), Error> {
             CreateEmbed::new()
                 .description(desc)
                 .title("Bot Information")
+                .color(Colour::from_rgb(88, 101, 242)),
+        )
+        .embed(
+            CreateEmbed::new()
+                .title("AI Information")
+                .description(ai_desc)
+                .timestamp(Timestamp::now())
                 .color(Colour::from_rgb(88, 101, 242)),
         )
         .embed(

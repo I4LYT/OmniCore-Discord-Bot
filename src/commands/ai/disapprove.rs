@@ -29,7 +29,7 @@ pub(crate) async fn disapprove(
                 Colour::from_rgb(255, 0, 0),
                 false,
             ))
-                .await?;
+            .await?;
             return Ok(());
         } else {
             guild_id = Some(ctx.guild_id().unwrap());

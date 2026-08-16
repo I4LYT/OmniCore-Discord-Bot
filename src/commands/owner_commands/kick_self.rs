@@ -1,3 +1,4 @@
+use crate::commands::build_message_reply;
 use crate::commands::owner_commands::autocomplete_guild;
 use crate::{CustomContext, Error};
 use mongodb::bson::doc;
@@ -7,7 +8,6 @@ use poise::serenity_prelude::{
     CreateEmbed, GuildId, Timestamp,
 };
 use std::time::Duration;
-use crate::commands::build_message_reply;
 
 #[poise::command(
     slash_command,
@@ -35,7 +35,7 @@ pub async fn kick_self(
                 ":x: Invalid guild",
                 "Invalid Guild, please select a server from the autocomplete suggestions.",
                 Colour::from_rgb(255, 0, 0),
-                false
+                false,
             );
             ctx.send(res).await?;
             typing.stop();
@@ -56,7 +56,7 @@ pub async fn kick_self(
             ":x: Not in guild",
             "This bot is not in that server.",
             Colour::from_rgb(255, 0, 0),
-            false
+            false,
         );
         ctx.send(res).await?;
         typing.stop();
@@ -112,7 +112,7 @@ pub async fn kick_self(
                 ctx.http(),
                 poise::serenity_prelude::CreateInteractionResponse::Acknowledge,
             )
-                .await?;
+            .await?;
 
             if mci.data.custom_id.starts_with("kick_self_cancel") {
                 sent_msg
@@ -159,7 +159,10 @@ pub async fn kick_self(
                     CreateReply::default()
                         .embed(
                             CreateEmbed::new()
-                                .description(format!("Successfully left the server: **{}**", guild_name))
+                                .description(format!(
+                                    "Successfully left the server: **{}**",
+                                    guild_name
+                                ))
                                 .title(":white_check_mark: Left Server")
                                 .timestamp(Timestamp::now())
                                 .color(Colour::from_rgb(0, 255, 0)),
