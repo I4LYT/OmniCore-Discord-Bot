@@ -222,7 +222,7 @@ async fn main() {
                     if dm_only {
                         let _ = err.ctx().unwrap().send(CreateReply::default().embed(
                             CreateEmbed::new()
-                                .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
+                                .description("This command can only be used in DMs (Direct Messages/Private Messages).")
                                 .title(":x: DM Only")
                                 .timestamp(Timestamp::now())
                                 .color(Colour::from_rgb(255, 0, 0)),
@@ -233,7 +233,7 @@ async fn main() {
                     if guild_only {
                         let _ = err.ctx().unwrap().send(CreateReply::default().embed(
                             CreateEmbed::new()
-                                .description(format!("This command can only be used in a server, please use it in a server instead of a DM.\n{}", err.to_string().replace("`", "'")))
+                                .description("This command can only be used in a server, please use it in a server instead of a DM.")
                                 .title(":x: Guild Only")
                                 .timestamp(Timestamp::now())
                                 .color(Colour::from_rgb(255, 0, 0)),
