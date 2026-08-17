@@ -339,7 +339,12 @@ async fn main() {
         database::mongo_shutdown().await;
         log::info!("Bot has been shutdown!");
     });
-    unwrapped_client.start_shards(4).await.unwrap();
+    
+    let start_shard = config::START_SHARD.get().unwrap();
+    let end_shard = config::END_SHARD.get().unwrap();
+    let total_shards = config::TOTAL_SHARDS.get().unwrap();
+    
+    unwrapped_client.start_shard_range(*start_shard..*end_shard, *total_shards).await.expect("Failed to start shard range");
 }
 
 async fn shutdown_signal() {
