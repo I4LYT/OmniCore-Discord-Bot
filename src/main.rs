@@ -151,6 +151,8 @@ async fn main() {
         commands::basic_utils::prefix::set_prefix(),
         commands::basic_utils::info::info(),
         commands::basic_utils::help::help(),
+        commands::basic_utils::compare_roles::compare_roles_f(),
+        commands::basic_utils::highest_role_from_member::highest_role_from_member(),
         commands::moderation::kick::kick(),
         commands::moderation::ban::ban(),
         commands::moderation::unban::unban(),
@@ -339,12 +341,15 @@ async fn main() {
         database::mongo_shutdown().await;
         log::info!("Bot has been shutdown!");
     });
-    
+
     let start_shard = config::START_SHARD.get().unwrap();
     let end_shard = config::END_SHARD.get().unwrap();
     let total_shards = config::TOTAL_SHARDS.get().unwrap();
-    
-    unwrapped_client.start_shard_range(*start_shard..*end_shard, *total_shards).await.expect("Failed to start shard range");
+
+    unwrapped_client
+        .start_shard_range(*start_shard..*end_shard, *total_shards)
+        .await
+        .expect("Failed to start shard range");
 }
 
 async fn shutdown_signal() {

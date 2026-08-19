@@ -11,7 +11,6 @@ pub(crate) static START_SHARD: OnceCell<u32> = OnceCell::new();
 pub(crate) static END_SHARD: OnceCell<u32> = OnceCell::new();
 pub(crate) static TOTAL_SHARDS: OnceCell<u32> = OnceCell::new();
 
-
 pub(crate) fn init_config() {
     dotenv().ok();
 
