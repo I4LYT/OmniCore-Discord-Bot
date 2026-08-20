@@ -1,6 +1,6 @@
 use crate::{CustomContext, Error};
-use poise::serenity_prelude::{ChannelType, Colour, CreateAllowedMentions, CreateEmbed, Timestamp};
 use poise::CreateReply;
+use poise::serenity_prelude::{ChannelType, Colour, CreateAllowedMentions, CreateEmbed, Timestamp};
 
 #[poise::command(
     slash_command,
@@ -14,26 +14,38 @@ pub async fn serverinfo(ctx: CustomContext<'_>) -> Result<(), Error> {
     ctx.defer().await?;
 
     // scope so it's safe
-    let (name, owner, channels, voice_channels, roles, emojis, boosts, boost_tier, all_members, humans, bot_members, icon_url) = {
+    let (
+        name,
+        owner,
+        channels,
+        voice_channels,
+        roles,
+        emojis,
+        boosts,
+        boost_tier,
+        all_members,
+        humans,
+        bot_members,
+        icon_url,
+    ) = {
         let guild = ctx.guild().unwrap();
 
         let owner = guild.owner_id;
         let channels = guild.channels.len();
-        let voice_channels = guild.channels
+        let voice_channels = guild
+            .channels
             .values()
             .filter(|c| c.kind == ChannelType::Voice || c.kind == ChannelType::Stage)
             .count();
         let roles = guild.roles.len();
         let emojis = guild.emojis.len();
         let boosts = guild.premium_subscription_count.unwrap_or(0);
-        let boost_tier = format!("{:?}", guild.premium_tier).to_lowercase().replace("tier", "");
+        let boost_tier = format!("{:?}", guild.premium_tier)
+            .to_lowercase()
+            .replace("tier", "");
         let all_members = guild.member_count;
 
-        let bot_members = guild
-            .members
-            .values()
-            .filter(|m| m.user.bot)
-            .count() as u64;
+        let bot_members = guild.members.values().filter(|m| m.user.bot).count() as u64;
         let humans = all_members.saturating_sub(bot_members);
 
         let name = guild.name.clone();
@@ -54,8 +66,7 @@ pub async fn serverinfo(ctx: CustomContext<'_>) -> Result<(), Error> {
             icon_url,
         )
     };
-    
-    
+
     let text_channels = channels.saturating_sub(voice_channels);
     let res = CreateReply::default()
         .embed(
