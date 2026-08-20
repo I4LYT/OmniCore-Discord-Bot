@@ -1,5 +1,8 @@
-use crate::commands::{build_message_reply, parse_duration, RoleCompareResult, compare_roles, get_highest_role_from_member};
-use crate::{get_guild_owner_id, CustomContext, Error};
+use crate::commands::{
+    RoleCompareResult, build_message_reply, compare_roles, get_highest_role_from_member,
+    parse_duration,
+};
+use crate::{CustomContext, Error, get_guild_owner_id};
 use poise::CreateReply;
 use poise::serenity_prelude::{
     Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, DiscordJsonError, EditMember,
@@ -28,7 +31,7 @@ pub(crate) async fn time(
     reason: Option<String>,
 ) -> Result<(), Error> {
     //! Time a member from the server.
-    
+
     let author_member = ctx.author_member().await.unwrap();
     let guild_owner_id = get_guild_owner_id(&ctx).await;
 

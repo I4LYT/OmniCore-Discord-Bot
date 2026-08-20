@@ -6,5 +6,6 @@ pub mod highest_role_from_member;
 pub(crate) mod info;
 pub(crate) mod ping;
 pub(crate) mod prefix;
+pub mod role;
 pub mod server_info;
 pub mod user_info;

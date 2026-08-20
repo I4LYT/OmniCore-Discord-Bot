@@ -152,7 +152,10 @@ async fn main() {
         commands::basic_utils::info::info(),
         commands::basic_utils::help::help(),
         commands::basic_utils::compare_roles::compare_roles_f(),
+        commands::basic_utils::role::role(),
         commands::basic_utils::highest_role_from_member::highest_role_from_member(),
+        commands::basic_utils::allroles::roles_all(),
+        commands::basic_utils::server_info::serverinfo(),
         commands::moderation::kick::kick(),
         commands::moderation::ban::ban(),
         commands::moderation::unban::unban(),
@@ -209,6 +212,8 @@ async fn main() {
                     let mut dm_only = false;
                     #[allow(unused)]
                     let mut guild_only = false;
+                    #[allow(unused)]
+                    let mut subcommand_required = false;
 
                     match err {
                         FrameworkError::CommandCheckFailed {error: _, ctx: _, ..} => {skip = true}, // to prevent double logging
@@ -218,6 +223,7 @@ async fn main() {
                         FrameworkError::MissingUserPermissions {missing_permissions, .. } => {missing_user_permissions = missing_permissions;}
                         FrameworkError::DmOnly {..} => {dm_only = true}
                         FrameworkError::GuildOnly {..} => {guild_only = true}
+                        FrameworkError::SubcommandRequired {..} => {subcommand_required = true}
                         _ => {}
                     }
 
@@ -226,6 +232,17 @@ async fn main() {
                             CreateEmbed::new()
                                 .description("This command can only be used in DMs (Direct Messages/Private Messages).")
                                 .title(":x: DM Only")
+                                .timestamp(Timestamp::now())
+                                .color(Colour::from_rgb(255, 0, 0)),
+                        ).reply(true).ephemeral(true)).await;
+                        return;
+                    }
+
+                    if subcommand_required {
+                        let _ = err.ctx().unwrap().send(CreateReply::default().embed(
+                            CreateEmbed::new()
+                                .description("This command requires a subcommand.")
+                                .title(":x: Subcommand Required")
                                 .timestamp(Timestamp::now())
                                 .color(Colour::from_rgb(255, 0, 0)),
                         ).reply(true).ephemeral(true)).await;

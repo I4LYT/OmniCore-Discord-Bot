@@ -1,11 +1,14 @@
-use crate::{CustomContext, Error, commands::compare_roles, commands::get_highest_role_from_member, commands::RoleCompareResult, get_guild_owner_id};
+use crate::commands::build_message_reply;
+use crate::{
+    CustomContext, Error, commands::RoleCompareResult, commands::compare_roles,
+    commands::get_highest_role_from_member, get_guild_owner_id,
+};
 use poise::CreateReply;
 use poise::serenity_prelude::http::HttpError;
 use poise::serenity_prelude::{
     Colour, CreateAllowedMentions, CreateEmbed, CreateEmbedAuthor, DiscordJsonError,
     Error as SError, ErrorResponse, Member, Mentionable, StatusCode, Timestamp,
 };
-use crate::commands::build_message_reply;
 
 #[poise::command(
     slash_command,
