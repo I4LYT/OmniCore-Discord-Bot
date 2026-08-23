@@ -32,7 +32,7 @@ static OLLAMA: OnceCell<Ollama> = OnceCell::new();
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, ctx: Context, ready: Ready) {
         let guilds = ready
             .guilds
             .to_vec()
@@ -45,6 +45,10 @@ impl EventHandler for Handler {
             ready.shard.unwrap().id,
             ready.user.name,
             guilds
+        );
+        ctx.shard.set_presence(
+            Some(ActivityData::custom("/help | OmniCore Discord Bot",)),
+            OnlineStatus::Online,
         );
     }
 }
