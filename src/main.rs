@@ -18,8 +18,11 @@ use serenity::model::gateway::Ready;
 use serenity::model::user::OnlineStatus;
 use serenity::prelude::*;
 use std::collections::HashSet;
+use std::time::Duration;
+use log::log;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
+use serenity::cache::Settings as CacheSettings;
 
 #[derive(Clone, Debug, Copy)]
 struct Data {}
@@ -348,9 +351,13 @@ async fn main() {
                 })
             })
             .build();
-
+    
+    let mut cache_settings = CacheSettings::default();
+    cache_settings.time_to_live = Duration::from_mins(10);
+    
     let client = serenity::ClientBuilder::new(token, intents)
         .framework(framework)
+        .cache_settings(cache_settings)
         .event_handler(Handler)
         .await;
 
