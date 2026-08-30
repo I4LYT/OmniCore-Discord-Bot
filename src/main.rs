@@ -19,7 +19,6 @@ use serenity::model::user::OnlineStatus;
 use serenity::prelude::*;
 use std::collections::HashSet;
 use std::time::Duration;
-use log::log;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
 use serenity::cache::Settings as CacheSettings;
