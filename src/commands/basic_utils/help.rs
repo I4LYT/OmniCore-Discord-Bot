@@ -1,5 +1,6 @@
 use crate::{CustomContext, Error, commands::basic_utils::prefix::get_prefix};
 
+/// Shows the built-in help output for all commands or a specific command.
 #[poise::command(
     prefix_command,
     track_edits,
@@ -12,8 +13,6 @@ pub async fn help(
     ctx: CustomContext<'_>,
     #[description = "Specific command to show help about"] command: Option<String>,
 ) -> Result<(), Error> {
-    //! Help command that lists all available commands.
-
     let prefix = get_prefix(
         ctx.guild_id()
             .unwrap_or(poise::serenity_prelude::GuildId::new(1)),
