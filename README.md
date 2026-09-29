@@ -16,8 +16,8 @@ OmniCore Discord Bot is a multi-purpose Discord bot written in Rust. It uses the
     - Ping
     - Help
     - Info
-    - User / server / role utilities
-    - Emoji and role comparison helpers **(WIP)**
+    - User **(WIP)** / server / role utilities
+    - Emoji **(WIP)** and role comparison helpers
 - AI features
     - Responds when mentioned or replied to
     - Prompt management
