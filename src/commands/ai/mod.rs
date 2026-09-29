@@ -6,11 +6,11 @@
 pub mod approve;
 pub(crate) mod change_prompt;
 pub(crate) mod delete_memory;
+pub(crate) mod delete_prompt;
 pub mod disapprove;
 pub(crate) mod get_prompt;
 pub(crate) mod init_ollama;
 pub(crate) mod mention;
-pub(crate) mod delete_prompt;
 pub(crate) mod tools;
 
 /// Default system prompt used to steer the Ollama-backed assistant.

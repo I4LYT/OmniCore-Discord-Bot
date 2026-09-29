@@ -15,7 +15,6 @@ mod logging;
 use crate::commands::ai::init_ollama::init_ollama;
 use mongodb::bson::doc;
 use ollama_rs::Ollama;
-use tokio::sync::OnceCell;
 use poise::serenity_prelude::Permissions;
 use poise::{
     Command, CreateReply, FrameworkError,
@@ -31,6 +30,7 @@ use std::collections::HashSet;
 use std::time::Duration;
 use tokio::signal;
 use tokio::signal::unix::{SignalKind, signal};
+use tokio::sync::OnceCell;
 
 /// Shared runtime state passed into poise command handlers.
 #[derive(Clone, Debug, Copy)]
@@ -180,7 +180,6 @@ async fn main() {
         commands::basic_utils::compare_roles::compare_roles_f(),
         commands::basic_utils::role::role(),
         commands::basic_utils::highest_role_from_member::highest_role_from_member(),
-        commands::basic_utils::allroles::roles_all(),
         commands::basic_utils::server_info::serverinfo(),
         commands::moderation::kick::kick(),
         commands::moderation::ban::ban(),

@@ -1,6 +1,6 @@
 use dotenvy::dotenv;
-use tokio::sync::OnceCell;
 use std::env;
+use tokio::sync::OnceCell;
 
 /// Discord bot token loaded from the environment.
 pub(crate) static DISCORD_TOKEN: OnceCell<String> = OnceCell::const_new();
